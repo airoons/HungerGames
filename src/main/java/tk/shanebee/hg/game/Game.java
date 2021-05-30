@@ -2,7 +2,12 @@ package tk.shanebee.hg.game;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.Directional;
 import org.bukkit.entity.Player;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.Status;
@@ -25,10 +30,7 @@ import tk.shanebee.hg.tasks.TimerTask;
 import tk.shanebee.hg.util.Util;
 import tk.shanebee.hg.util.Vault;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * General game object
@@ -75,9 +77,10 @@ public class Game {
      * @param isReady    If the game is ready to start
      * @param cost       Cost of this game
      */
-    public Game(String name, Bound bound, List<Location> spawns, Sign lobbySign, int timer, int minPlayers, int maxPlayers, int countDownTime, int roam, boolean isReady, int cost) {
+    public Game(String name, Bound bound, List<Location> spawns, List<ChestData> chests, Sign lobbySign, int timer, int minPlayers, int maxPlayers, int countDownTime, int roam, boolean isReady, int cost) {
         this(name, bound, timer, minPlayers, maxPlayers, countDownTime, roam, cost);
         gameArenaData.spawns.addAll(spawns);
+        gameArenaData.chests.addAll(chests);
         this.gameBlockData.sign1 = lobbySign;
 
         // If lobby signs are not properly setup, game is not ready
@@ -381,6 +384,7 @@ public class Game {
         gamePlayerData.clearPlayers();
         gamePlayerData.clearSpectators();
         gamePlayerData.clearTeams();
+        resetRandomChests();
         Bukkit.getPluginManager().callEvent(new GameEndEvent(this, winners, death));
     }
 
@@ -416,6 +420,30 @@ public class Game {
         }
         gameBlockData.updateLobbyBlock();
         gameArenaData.updateBoards();
+    }
+
+    public void resetRandomChests() {
+        Random rand = new Random();
+        World world = gameArenaData.getBound().getWorld();
+
+        Block block = null;
+        Directional dir;
+
+        int spawnChance = Config.globalChestChance;
+
+        for (ChestData chestData : gameArenaData.chests) {
+            block = world.getBlockAt(chestData.getLocation());
+
+            if (rand.nextInt(100) <= spawnChance) {
+                if (block.getType() != Material.CHEST) {
+                    block.setType(Material.CHEST);
+                    dir = (Directional) block.getBlockData();
+                    dir.setFacing(chestData.getBlockFace());
+                    block.setBlockData(dir);
+                }
+            } else if (block.getType() == Material.CHEST)
+                block.setType(Material.AIR);
+        }
     }
 
     boolean isGameOver() {

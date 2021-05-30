@@ -6,7 +6,7 @@
 
     <groupId>tk.shanebee.hg</groupId>
     <artifactId>HungerGames</artifactId>
-    <version>4.15.4</version>
+    <version>4.15.6</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -39,6 +39,10 @@
             <id>nexus</id>
             <name>Lumine Releases</name>
             <url>https://mvn.lumine.io/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <id>IntellectualSites</id>
+            <url>https://mvn.intellectualsites.com/content/repositories/releases/</url>
         </repository>
     </repositories>
 
@@ -116,7 +120,13 @@
         <dependency>
             <groupId>io.lumine.xikage</groupId>
             <artifactId>MythicMobs</artifactId>
-            <version>4.9.1</version>  
+            <version>4.9.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.intellectualsites.fawe</groupId>
+            <artifactId>FAWE-Bukkit</artifactId>
+            <version>1.16-687</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -130,10 +140,10 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-jar-plugin</artifactId>
                         <version>3.2.0</version>
-                        <configuration>
-                            <!-- Put here wherever you would like the plugin to build -->
-                            <outputDirectory>/Users/ShaneBee/Desktop/Server/1-16-HG-TEST/plugins</outputDirectory>
-                        </configuration>
+<!--                        <configuration>-->
+<!--                            &lt;!&ndash; Put here wherever you would like the plugin to build &ndash;&gt;-->
+<!--                            <outputDirectory>/Users/ShaneBee/Desktop/Server/1-16-HG-TEST/plugins</outputDirectory>-->
+<!--                        </configuration>-->
                     </plugin>
                 </plugins>
             </build>

@@ -45,7 +45,7 @@ public class CommandHandler {
         registerCommand(DebugCmd.class);
         registerCommand(DeleteCmd.class);
         registerCommand(JoinCmd.class);
-        registerCommand(KitCmd.class);
+//        registerCommand(KitCmd.class);
         registerCommand(LeaveCmd.class);
         registerCommand(ListCmd.class);
         registerCommand(ListGamesCmd.class);
@@ -56,6 +56,10 @@ public class CommandHandler {
         registerCommand(StopCmd.class);
         registerCommand(ToggleCmd.class);
         registerCommand(WandCmd.class);
+
+        registerCommand(ChestLocsCmd.class);
+        registerCommand(ChestRecalcCmd.class);
+
         if (Config.spectateEnabled) {
             registerCommand(SpectateCmd.class);
         }

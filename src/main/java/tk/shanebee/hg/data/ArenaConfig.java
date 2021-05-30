@@ -1,10 +1,10 @@
 package tk.shanebee.hg.data;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Difficulty;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.Directional;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -12,6 +12,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import tk.shanebee.hg.*;
 import tk.shanebee.hg.game.Bound;
+import tk.shanebee.hg.game.ChestData;
 import tk.shanebee.hg.game.Game;
 import tk.shanebee.hg.game.GameArenaData;
 import tk.shanebee.hg.managers.KitManager;
@@ -111,6 +112,7 @@ public class ArenaConfig {
 				for (String arenaName : section.getKeys(false)) {
 					boolean isReady = true;
 					List<Location> spawns = new ArrayList<>();
+					List<ChestData> chests = new ArrayList<>();
 					Sign lobbysign = null;
 					int countDownTimer = 30;
 					int timer = 0;
@@ -160,6 +162,16 @@ public class ArenaConfig {
 					}
 
 					try {
+						for (String l : arenadat.getStringList(path + ".chests")) {
+							chests.add(getChestFromString(l));
+						}
+					} catch (Exception e) {
+						Util.warning("Unable to load chests for arena '" + arenaName + "'!");
+						e.printStackTrace();
+						isReady = false;
+					}
+
+					try {
                         String worldName = arenadat.getString(path + ".bound.world");
 					    World world = Bukkit.getWorld(worldName);
 					    if (world == null) {
@@ -174,7 +186,7 @@ public class ArenaConfig {
 						isReady = false;
 					}
 
-					Game game = new Game(arenaName, bound, spawns, lobbysign, timer, minplayers, maxplayers, countDownTimer, freeroam, isReady, cost);
+					Game game = new Game(arenaName, bound, spawns, chests, lobbysign, timer, minplayers, maxplayers, countDownTimer, freeroam, isReady, cost);
 					plugin.getGames().add(game);
 
 					World world = bound.getWorld();
@@ -252,6 +264,7 @@ public class ArenaConfig {
 						Util.debug(exception);
 					}
 					Util.log("Arena &b" + arenaName + "&7 has been &aloaded!");
+					game.resetRandomChests();
 
 				}
 			} else {
@@ -262,6 +275,22 @@ public class ArenaConfig {
 	
 	public int BC(String s, String st) {
 		return arenadat.getInt("arenas." + s + ".bound." + st);
+	}
+
+	public ChestData getChestFromString(String s) {
+		String[] h = s.split(":");
+
+		World world = Bukkit.getServer().getWorld(h[0]);
+		if (world == null)
+			return null;
+
+		Block chest = world.getBlockAt(Integer.parseInt(h[1]), Integer.parseInt(h[2]), Integer.parseInt(h[3]));
+		chest.setType(Material.CHEST);
+		Directional dir = (Directional) chest.getBlockData();
+		dir.setFacing(BlockFace.valueOf(h[4]));
+		chest.setBlockData(dir);
+
+		return new ChestData(chest.getLocation(), dir.getFacing());
 	}
 
 	public Location getLocFromString(String s) {

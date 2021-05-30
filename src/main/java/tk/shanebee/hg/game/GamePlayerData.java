@@ -96,17 +96,12 @@ public class GamePlayerData extends Data {
         for (int i = 0; i < 20; ++i)
             Util.scm(player, " ");
         String kit = game.kitManager.getKitListString();
-        Util.scm(player, " ");
         Util.scm(player, lang.kit_join_header);
-        Util.scm(player, " ");
         if (player.hasPermission("hg.kit") && game.kitManager.hasKits()) {
             Util.scm(player, lang.kit_join_msg);
-            Util.scm(player, " ");
-            Util.scm(player, lang.kit_join_avail + kit);
-            Util.scm(player, " ");
+            Util.scm(player, lang.kit_join_avail);
         }
         Util.scm(player, lang.kit_join_footer);
-        Util.scm(player, " ");
     }
 
     /**
@@ -349,6 +344,7 @@ public class GamePlayerData extends Data {
                     }
                 }
                 kitHelp(player);
+                game.getKitManager().setKit(player, game.getKitManager().getKits().get(0));
 
                 game.gameBlockData.updateLobbyBlock();
                 game.gameArenaData.updateBoards();

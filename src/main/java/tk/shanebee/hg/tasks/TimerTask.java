@@ -38,7 +38,11 @@ public class TimerTask implements Runnable {
 		this.end_minsec = lang.game_ending_minsec;
 		this.end_sec = lang.game_ending_sec;
 
-		this.id = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this, 0, 30 * 20L);
+		int timerInterval = Config.timerInterval;
+		if (timerInterval <= 0)
+			timerInterval = 5;
+
+		this.id = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this, 0, timerInterval * 20L);
 	}
 	
 	@Override

@@ -38,6 +38,7 @@ public class Config {
     public static List<String> bonusBlockTypes;
     public static boolean hideNametags;
     public static boolean savePreviousLocation;
+    public static int timerInterval;
 
     //Team info
     public static boolean team_showTeamNames;
@@ -84,6 +85,9 @@ public class Config {
     public static boolean mcmmoUseSkills;
     public static boolean mcmmoGainExp;
 
+    //chest placement
+    public static int globalChestChance;
+
     private final HG plugin;
     private File configFile;
     private FileConfiguration config;
@@ -124,6 +128,7 @@ public class Config {
         hideNametags = config.getBoolean("settings.hide-nametags");
         savePreviousLocation = config.getBoolean("settings.save-previous-location");
         bonusBlockTypes = config.getStringList("settings.bonus-block-types");
+        timerInterval = config.getInt("settings.timer-interval");
 
         // Team
         team_maxTeamSize = config.getInt("team.max-team-size");
@@ -166,6 +171,9 @@ public class Config {
 
         mcmmoUseSkills = config.getBoolean("mcmmo.use-skills");
         mcmmoGainExp = config.getBoolean("mcmmo.gain-experience");
+
+        // chest chance
+        globalChestChance = config.getInt("chestspawning.globalchance");
 
         try {
             Vault.setupEconomy();

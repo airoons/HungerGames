@@ -1,6 +1,8 @@
 package tk.shanebee.hg.game;
 
 import org.bukkit.Location;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import tk.shanebee.hg.Status;
 
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ public class GameArenaData extends Data {
     private final int roamTime;
     int cost;
     final List<Location> spawns;
+    public List<ChestData> chests;
     Location exit;
     Status status;
     int chestRefillTime = 0;
@@ -38,6 +41,7 @@ public class GameArenaData extends Data {
         this.cost = cost;
         this.spawns = new ArrayList<>();
         this.board = new Board(game);
+        this.chests = new ArrayList<>();
     }
 
     /**
