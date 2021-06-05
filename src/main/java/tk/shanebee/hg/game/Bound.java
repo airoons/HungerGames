@@ -59,7 +59,14 @@ public class Bound {
 
 	public Integer[] getRandomLocs() {
 		Random r = new Random();
-		return new Integer[] {r.nextInt(x2 - x + 1) + x, y2, r.nextInt(z2 - z + 1) + z};
+		int border = (int) getWorld().getWorldBorder().getSize() / 2;
+
+		int cx = (Math.abs(x) < border) ? x : (border - 1) * (x < 0 ? - 1 : 1);
+		int cz = (Math.abs(z) < border) ? z : (border - 1) * (z < 0 ? - 1 : 1);
+		int cx2 = (Math.abs(x2) < border) ? x2 : (border - 1) * (x2 < 0 ? - 1 : 1);
+		int cz2 = (Math.abs(z2) < border) ? z2 : (border - 1) * (z2 < 0 ? - 1 : 1);
+
+		return new Integer[] {r.nextInt(cx2 - cx + 1) + cx, y2, r.nextInt(cz2 - cz + 1) + cz};
 	}
 
 	/** Check if a location is within the region of this bound

@@ -106,7 +106,7 @@ public class ChestDrop implements Listener {
             Random rg = new Random();
             invopener = player;
 
-            Inventory i = Bukkit.getServer().createInventory(player, 54);
+            Inventory i = Bukkit.getServer().createInventory(player, 27);
             i.clear();
             int c = rg.nextInt(Config.randomChestMaxContent) + 1;
             while (c != 0) {

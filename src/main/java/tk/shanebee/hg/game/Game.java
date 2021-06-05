@@ -62,6 +62,8 @@ public class Game {
     final GameCommandData gameCommandData;
     final GameBorderData gameBorderData;
 
+    public boolean gracePeriod;
+
     /**
      * Create a new game
      * <p>Internally used when loading from config on server start</p>
@@ -414,9 +416,7 @@ public class Game {
         } else if (status == Status.WAITING) {
             gamePlayerData.msgAll(lang.player_left_game
                     .replace("<arena>", gameArenaData.getName())
-                    .replace("<player>", player.getName()) +
-                    (gameArenaData.minPlayers - gamePlayerData.players.size() <= 0 ? "!" : ": " + lang.players_to_start
-                            .replace("<amount>", String.valueOf((gameArenaData.minPlayers - gamePlayerData.players.size())))));
+                    .replace("<player>", player.getName()));
         }
         gameBlockData.updateLobbyBlock();
         gameArenaData.updateBoards();
@@ -461,6 +461,10 @@ public class Game {
             }
         }
         return false;
+    }
+
+    public TimerTask getTimer() {
+        return timer;
     }
 
     @Override

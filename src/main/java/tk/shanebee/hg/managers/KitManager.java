@@ -36,7 +36,8 @@ public class KitManager {
     public void applyKit(@NotNull Player player) {
         if (kits.containsKey(player)) {
             KitEntry kitEntry = kits.get(player);
-            kitEntry.setInventoryContent(player);
+            if (kitEntry != null)
+                kitEntry.setInventoryContent(player);
         }
     }
 

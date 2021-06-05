@@ -1,6 +1,7 @@
 package tk.shanebee.hg.events;
 
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import tk.shanebee.hg.game.Game;
@@ -11,6 +12,7 @@ import tk.shanebee.hg.game.Game;
  */
 public class ChestOpenEvent extends Event {
 
+	private Player player;
 	private Game game;
 	private Block block;
 	private boolean bonus;
@@ -20,10 +22,18 @@ public class ChestOpenEvent extends Event {
 	 * @param block The block that is opening
 	 * @param bonus If the chest is a bonus chest
 	 */
-	public ChestOpenEvent(Game game, Block block, boolean bonus) {
+	public ChestOpenEvent(Player player, Game game, Block block, boolean bonus) {
+		this.player = player;
 		this.game = game;
 		this.block = block;
 		this.bonus = bonus;
+	}
+
+	/** Get the player in this event
+	 * @return The player for this event
+	 */
+	public Player getPlayer() {
+		return player;
 	}
 
 	/** Get the game in this event

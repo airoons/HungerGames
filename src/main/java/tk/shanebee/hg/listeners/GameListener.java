@@ -9,13 +9,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Hanging;
-import org.bukkit.entity.ItemFrame;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Shulker;
+import org.bukkit.entity.*;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -31,14 +25,7 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerBucketEmptyEvent;
-import org.bukkit.event.player.PlayerBucketEvent;
-import org.bukkit.event.player.PlayerBucketFillEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -152,7 +139,7 @@ public class GameListener implements Listener {
 			if (playerData != null) {
 				Game game = playerData.getGame();
 
-				if (game.getGameArenaData().getStatus() != Status.RUNNING) {
+				if (game.getGameArenaData().getStatus() != Status.RUNNING || game.gracePeriod) {
 					event.setCancelled(true);
 				} else if (event.getFinalDamage() >= player.getHealth()) {
 					if (hasTotem(player)) return;
@@ -247,9 +234,9 @@ public class GameListener implements Listener {
 
 			for (UUID uuid : game.getGamePlayerData().getPlayers()) {
 				Player alive = Bukkit.getPlayer(uuid);
-				if (alive != null && player != alive) {
-					alive.playSound(alive.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 5, 1);
-				}
+//				if (alive != null && player != alive) {
+//					alive.playSound(alive.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 5, 1);
+//				}
 			}
 
 			gamePlayerData.leave(player, true);
@@ -262,7 +249,7 @@ public class GameListener implements Listener {
 			PlayerDeathEvent playerDeathEvent = new PlayerDeathEvent(player, Collections.emptyList(), 0, deathString);
 			Bukkit.getPluginManager().callEvent(playerDeathEvent);
 
-			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> checkStick(game), 40L);
+//			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> checkStick(game), 40L);
 		}, 1);
 
 	}
@@ -369,6 +356,7 @@ public class GameListener implements Listener {
 		if (!gameBlockData.isLoggedChest(block.getLocation())) {
 			HG.getPlugin().getManager().fillChests(block, game, event.isBonus());
 			gameBlockData.addGameChest(block.getLocation());
+			game.getGamePlayerData().addChestLoot(event.getPlayer());
 		}
 	}
 
@@ -382,9 +370,9 @@ public class GameListener implements Listener {
 			assert block != null;
 			PlayerData pd = playerManager.getPlayerData(player);
 			if (block.getType() == Material.CHEST) {
-				Bukkit.getServer().getPluginManager().callEvent(new ChestOpenEvent(pd.getGame(), block, false));
+				Bukkit.getServer().getPluginManager().callEvent(new ChestOpenEvent(player, pd.getGame(), block, false));
 			} else if (BlockUtils.isBonusBlock(block)) {
-				Bukkit.getServer().getPluginManager().callEvent(new ChestOpenEvent(pd.getGame(), block, true));
+				Bukkit.getServer().getPluginManager().callEvent(new ChestOpenEvent(player, pd.getGame(), block, true));
 			}
 		}
 	}
@@ -469,6 +457,12 @@ public class GameListener implements Listener {
 						Util.scm(player, lang.listener_no_edit_block);
 						event.setCancelled(true);
 					} else {
+						if (event.getBlock().getType() == Material.TNT) {
+							event.getBlock().setType(Material.AIR);
+							event.getBlock().getWorld().spawnEntity(event.getBlock().getLocation(), EntityType.PRIMED_TNT);
+							return;
+						}
+
 						gameBlockData.recordBlockPlace(event.getBlockReplacedState());
 						if (isChest(block)) {
 							gameBlockData.addPlayerChest(block.getLocation());
@@ -621,24 +615,12 @@ public class GameListener implements Listener {
 
 	@EventHandler
 	private void onEntityExplode(EntityExplodeEvent event) {
-		if (gameManager.isInRegion(event.getLocation())) {
-			Game game = gameManager.getGame(event.getLocation());
-			for (Block block : event.blockList()) {
-				game.getGameBlockData().recordBlockBreak(block);
-			}
-			event.setYield(0);
-		}
+		event.blockList().clear();
 	}
 
 	@EventHandler
 	private void onBlockExplode(BlockExplodeEvent event) {
-		if (gameManager.isInRegion(event.getBlock().getLocation())) {
-			GameBlockData gameBlockData = gameManager.getGame(event.getBlock().getLocation()).getGameBlockData();
-			for (Block block : event.blockList()) {
-				gameBlockData.recordBlockBreak(block);
-			}
-			event.setYield(0);
-		}
+		event.blockList().clear();
 	}
 
 	@EventHandler
@@ -727,6 +709,23 @@ public class GameListener implements Listener {
 	}
 
 	@EventHandler
+	private void onArrowPickup(PlayerPickupArrowEvent event) {
+		if (playerManager.hasSpectatorData(event.getPlayer().getUniqueId())) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler
+	private void onJoin(PlayerJoinEvent event) {
+		Player player = event.getPlayer();
+
+		for (Player oPlayer : Bukkit.getOnlinePlayers()) {
+			if (playerManager.hasPlayerData(oPlayer) || playerManager.hasSpectatorData(oPlayer))
+				oPlayer.hidePlayer(plugin, player);
+		}
+	}
+
+	@EventHandler
 	private void onLogout(PlayerQuitEvent event) {
 		Player player = event.getPlayer();
 		if (playerManager.hasPlayerData(player)) {
@@ -781,5 +780,4 @@ public class GameListener implements Listener {
 			}
 		}
 	}
-
 }

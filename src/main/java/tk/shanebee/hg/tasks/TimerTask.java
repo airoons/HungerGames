@@ -23,6 +23,7 @@ public class TimerTask implements Runnable {
     private final String end_min;
     private final String end_minsec;
     private final String end_sec;
+    private final int timerInterval;
 
 	public TimerTask(Game g, int time) {
 		this.remainingtime = time;
@@ -38,9 +39,7 @@ public class TimerTask implements Runnable {
 		this.end_minsec = lang.game_ending_minsec;
 		this.end_sec = lang.game_ending_sec;
 
-		int timerInterval = Config.timerInterval;
-		if (timerInterval <= 0)
-			timerInterval = 5;
+		this.timerInterval = (Config.timerInterval > 0) ? Config.timerInterval : 5;
 
 		this.id = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this, 0, timerInterval * 20L);
 	}
@@ -49,7 +48,6 @@ public class TimerTask implements Runnable {
 	public void run() {
 		GameArenaData gameArenaData = game.getGameArenaData();
 		if (game == null || gameArenaData.getStatus() != Status.RUNNING) stop(); //A quick null check!
-		
 
 		if (Config.bossbar) game.getGameBarData().bossbarUpdate(remainingtime);
 
@@ -65,7 +63,7 @@ public class TimerTask implements Runnable {
 		}
 
 		int refillRepeat = gameArenaData.getChestRefillRepeat();
-		if (refillRepeat > 0 && timer % refillRepeat == 0) {
+		if (timer == refillRepeat) {
 			game.getGameBlockData().refillChests();
 			game.getGamePlayerData().msgAll(lang.game_chest_refill);
 		}
@@ -73,11 +71,10 @@ public class TimerTask implements Runnable {
 		if (remainingtime == teleportTimer && Config.teleportEnd) {
 			game.getGamePlayerData().msgAll(lang.game_almost_over);
 			game.getGamePlayerData().respawnAll();
-		} else if (this.remainingtime < 10) {
+		} else if (this.remainingtime <= 0) {
 			stop();
-			game.stop(false);
 		} else {
-			if (!Config.bossbar) {
+			if (!Config.bossbar && canAnnounceTime(this.remainingtime)) {
 				int minutes = this.remainingtime / 60;
 				int asd = this.remainingtime % 60;
 				if (minutes != 0) {
@@ -94,10 +91,40 @@ public class TimerTask implements Runnable {
                 }
 			}
 		}
-		remainingtime = (remainingtime - 30);
-		timer += 30;
+		remainingtime = (remainingtime - timerInterval);
+		timer += timerInterval;
+
+		String remainTime = "00:00";
+		if (game.getTimer() != null) {
+			int m = game.getTimer().getRemainingtime() / 60;
+			int s = game.getTimer().getRemainingtime() % 60;
+
+			remainTime = (m > 9 ? m : "0" + m) + ":" + (s > 9 ? s : "0" + s);
+		}
+
+		game.getGameArenaData().setTimeLeft(remainTime);
+		game.getGameArenaData().updateBoards();
 	}
-	
+
+	private boolean canAnnounceTime(int time) {
+		switch (time) {
+			case 600:
+			case 300:
+			case 180:
+			case 60:
+			case 30:
+			case 15:
+			case 5:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	public int getRemainingtime() {
+		return remainingtime;
+	}
+
 	public void stop() {
 		Bukkit.getScheduler().cancelTask(id);
 	}

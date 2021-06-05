@@ -28,6 +28,8 @@ public class GameArenaData extends Data {
     int chestRefillTime = 0;
     int chestRefillRepeat = 0;
     final Board board;
+    String aliveCount;
+    String timeLeft;
 
     public GameArenaData(Game game, String name, Bound bound, int timer, int minPlayers, int maxPlayers, int countDownTime, int roamTime, int cost) {
         super(game);
@@ -42,6 +44,8 @@ public class GameArenaData extends Data {
         this.spawns = new ArrayList<>();
         this.board = new Board(game);
         this.chests = new ArrayList<>();
+        this.aliveCount = "0/0";
+        this.timeLeft = "00:00";
     }
 
     /**
@@ -236,4 +240,11 @@ public class GameArenaData extends Data {
         game.gameArenaData.board.updateBoard();
     }
 
+    public void setAliveCount(String aliveCount) {
+        this.aliveCount = aliveCount;
+    }
+
+    public void setTimeLeft(String timeLeft) {
+        this.timeLeft = timeLeft;
+    }
 }

@@ -18,10 +18,11 @@ public class FreeRoamTask implements Runnable {
     public FreeRoamTask(Game game) {
         this.game = game;
         this.roamTime = game.getGameArenaData().getRoamTime();
+        game.gracePeriod = true;
 
         Language lang = HG.getPlugin().getLang();
-        String gameStarted = lang.roam_game_started;
-        String roamTimeString = lang.roam_time.replace("<roam>", "" + roamTime);
+        String gameStarted = lang.prefix + lang.roam_game_started;
+        String roamTimeString = lang.prefix + lang.roam_time.replace("<roam>", "" + roamTime);
 
         for (UUID u : game.getGamePlayerData().getPlayers()) {
             Player player = Bukkit.getPlayer(u);
@@ -42,8 +43,8 @@ public class FreeRoamTask implements Runnable {
     public void run() {
         if (roamTime > 0) {
             game.getGamePlayerData().msgAll(HG.getPlugin().getLang().roam_finished);
+            game.gracePeriod = false;
         }
-        game.startGame();
     }
 
     public void stop() {

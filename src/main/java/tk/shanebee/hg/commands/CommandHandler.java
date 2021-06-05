@@ -60,6 +60,8 @@ public class CommandHandler {
         registerCommand(ChestLocsCmd.class);
         registerCommand(ChestRecalcCmd.class);
 
+        registerCommand(SoundTestCmd.class);
+
         if (Config.spectateEnabled) {
             registerCommand(SpectateCmd.class);
         }

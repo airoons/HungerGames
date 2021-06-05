@@ -1,19 +1,22 @@
 package tk.shanebee.hg.game;
 
+import fr.minuskube.netherboard.Netherboard;
+import fr.minuskube.netherboard.bukkit.BPlayerBoard;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.scoreboard.Team.Option;
 import org.bukkit.scoreboard.Team.OptionStatus;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.data.Config;
-import tk.shanebee.hg.data.Language;
 import tk.shanebee.hg.util.Util;
-import tk.shanebee.hg.util.Validate;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Represents a team based scoreboard for a game
@@ -29,19 +32,16 @@ public class Board {
     private final Game game;
     private final HG plugin;
     private final Scoreboard scoreboard;
-    private final Objective board;
     private final Team[] lines = new Team[15];
     private final Team team;
     private final String[] entries = new String[]{"&1&r", "&2&r", "&3&r", "&4&r", "&5&r", "&6&r", "&7&r", "&8&r", "&9&r", "&0&r", "&a&r", "&b&r", "&c&r", "&d&r", "&e&r"};
+    private Map<UUID, BPlayerBoard> boards = new HashMap<>();
 
     @SuppressWarnings("ConstantConditions")
     public Board(Game game) {
         this.game = game;
         this.plugin = game.plugin;
         scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
-        board = scoreboard.registerNewObjective("Board", "dummy", "Board");
-        board.setDisplaySlot(DisplaySlot.SIDEBAR);
-        board.setDisplayName(" ");
 
         for (int i = 0; i < 15; i++) {
             lines[i] = scoreboard.registerNewTeam("line" + (i + 1));
@@ -80,55 +80,36 @@ public class Board {
     public void setBoard(Player player) {
         player.setScoreboard(scoreboard);
         team.addEntry(player.getName());
+
+        registerBoard(player);
     }
 
-    /**
-     * Set the title of this scoreboard
-     *
-     * @param title Title to set
-     */
-    public void setTitle(String title) {
-        board.setDisplayName(Util.getColString(title));
-    }
-
-    /**
-     * Set a specific line for this scoreboard
-     * <p>Lines 1 - 15</p>
-     *
-     * @param line Line to set (1 - 15)
-     * @param text Text to put in line
-     */
-    public void setLine(int line, String text) {
-        Validate.isBetween(line, 1, 15);
-        Team t = lines[line - 1];
-        if (ChatColor.stripColor(text).length() > (128 / 2)) {
-            String prefix = Util.getColString(text.substring(0, (128 / 2)));
-            t.setPrefix(prefix);
-            String lastColor = ChatColor.getLastColors(prefix);
-            int splitMax = Math.min(text.length(), 128 - lastColor.length());
-            t.setSuffix(Util.getColString(lastColor + text.substring((128 / 2), splitMax)));
-        } else {
-            t.setPrefix(Util.getColString(text));
-            t.setSuffix("");
+    public void removeBoard(Player player) {
+        if (boards.containsKey(player.getUniqueId())) {
+            boards.get(player.getUniqueId()).delete();
+            boards.remove(player.getUniqueId());
         }
-        board.getScore(Util.getColString(entries[line - 1])).setScore(line);
     }
 
-    /**
-     * Update this scoreboard
-     */
-    public void updateBoard() {
-        Language lang = plugin.getLang();
-        String alive = "  " + lang.players_alive_num.replace("<num>", String.valueOf(game.getGamePlayerData().getPlayers().size()));
+    private void registerBoard(Player player) {
+        BPlayerBoard board = Netherboard.instance().createBoard(player, Util.getColString(plugin.getLang().scoreboard_title));
 
-        setTitle(lang.scoreboard_title);
-        setLine(15, " ");
-        setLine(14, lang.scoreboard_arena);
-        setLine(13, "  &e" + game.getGameArenaData().getName());
-        setLine(12, " ");
-        setLine(11, lang.players_alive);
-        setLine(10, alive);
-        setLine(9, " ");
+        board.set(Util.getColString(plugin.getLang().scoreboard_line_1), 10);
+        board.set(Util.getColString(plugin.getLang().scoreboard_line_2), 9);
+        board.set(Util.getColString(plugin.getLang().scoreboard_line_3), 8);
+        // alive
+        board.set(Util.getColString(plugin.getLang().scoreboard_line_4 + game.getGameArenaData().aliveCount), 7);
+        // remaining time
+        board.set(Util.getColString(plugin.getLang().scoreboard_line_5 + game.getGameArenaData().timeLeft), 6);
+        board.set(Util.getColString(plugin.getLang().scoreboard_line_6), 5);
+        board.set(Util.getColString(plugin.getLang().scoreboard_line_7), 4);
+        // kills
+        board.set(Util.getColString(plugin.getLang().scoreboard_line_8 + game.gamePlayerData.kills.get(player.getUniqueId())), 3);
+        // chests looted
+        board.set(Util.getColString(plugin.getLang().scoreboard_line_9 + game.gamePlayerData.chestsLooted.get(player.getUniqueId())), 2);
+        board.set(Util.getColString(plugin.getLang().scoreboard_line_10), 1);
+
+        boards.put(player.getUniqueId(), board);
     }
 
     @Override
@@ -136,4 +117,20 @@ public class Board {
         return "Board{game=" + game + '}';
     }
 
+    public void updateBoard() {
+        for (Map.Entry<UUID, BPlayerBoard> entry : boards.entrySet()) {
+            Player player = Bukkit.getPlayer(entry.getKey());
+            if (player == null || !player.isOnline())
+                continue;
+
+            // alive
+            entry.getValue().set(Util.getColString(plugin.getLang().scoreboard_line_4 + game.getGameArenaData().aliveCount), 7);
+            // remaining time
+            entry.getValue().set(Util.getColString(plugin.getLang().scoreboard_line_5 + game.getGameArenaData().timeLeft), 6);
+            // kills
+            entry.getValue().set(Util.getColString(plugin.getLang().scoreboard_line_8 + game.gamePlayerData.kills.get(player.getUniqueId())), 3);
+            // chests looted
+            entry.getValue().set(Util.getColString(plugin.getLang().scoreboard_line_9 + game.gamePlayerData.chestsLooted.get(player.getUniqueId())), 2);
+        }
+    }
 }

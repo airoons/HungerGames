@@ -193,7 +193,7 @@ public class GameBlockData extends Data {
     void updateLobbyBlock() {
         if (sign2 == null || sign3 == null) return;
         sign2.setLine(1, game.gameArenaData.status.getName());
-        sign3.setLine(1, ChatColor.BOLD + "" + game.getGamePlayerData().players.size() + "/" + game.gameArenaData.maxPlayers);
+        sign3.setLine(1, game.getGamePlayerData().players.size() + "/" + game.gameArenaData.maxPlayers);
         sign2.update(true);
         sign3.update(true);
     }
@@ -221,7 +221,7 @@ public class GameBlockData extends Data {
             sign2.setLine(0, Util.getColString(lang.lobby_sign_2_1));
             sign2.setLine(1, Util.getColString(game.gameArenaData.status.getName()));
             sign3.setLine(0, Util.getColString(lang.lobby_sign_3_1));
-            sign3.setLine(1, Util.getColString("&l" + 0 + "/" + game.gameArenaData.maxPlayers));
+            sign3.setLine(1, Util.getColString(0 + "/" + game.gameArenaData.maxPlayers));
             sign1.update(true);
             sign2.update(true);
             sign3.update(true);

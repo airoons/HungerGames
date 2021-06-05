@@ -55,10 +55,17 @@ kit-disabled: '&cKits disabled in this game.'
 
 #  SCOREBOARD
 scoreboard-title: '&6&lHungerGames'
-players-alive: '&d&lTributes:'
-# <num> will be replaced by the number of remaining players in the game
-players-alive-num: '&e<num> alive'
-scoreboard-arena: "&a&lArena: &b"
+scoreboard-line-1: '    &f&oCommunity vakars'
+scoreboard-line-2: ''
+scoreboard-line-3: '&b&lVispārīgi'
+scoreboard-line-4: ' &3• &fSpēlētāji: '
+scoreboard-line-5: ' &3• &fAtlik. laiks: '
+scoreboard-line-6: ''
+scoreboard-line-7: '&b&lTava spēle'
+scoreboard-line-8: ' &3• &fNogalināti: '
+scoreboard-line-9: ' &3• &fLādes atv.: '
+scoreboard-line-10: ''
+players-alive-num: '&f<num>/24'
 
 #  TEAMS
 team-invite-1: '&6*&b&m                                                                             &6*'

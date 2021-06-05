@@ -47,7 +47,8 @@ public class GamePlayerData extends Data {
     final List<UUID> allPlayers = new ArrayList<>();
 
     // Data lists
-    final Map<Player, Integer> kills = new HashMap<>();
+    final Map<UUID, Integer> kills = new HashMap<>();
+    final Map<UUID, Integer> chestsLooted = new HashMap<>();
     final Map<String, Team> teams = new HashMap<>();
 
     protected GamePlayerData(Game game) {
@@ -258,7 +259,16 @@ public class GamePlayerData extends Data {
      * @param player The player to add a kill to
      */
     public void addKill(Player player) {
-        this.kills.put(player, this.kills.get(player) + 1);
+        this.kills.put(player.getUniqueId(), this.kills.getOrDefault(player.getUniqueId(), 0) + 1);
+    }
+
+    /**
+     * Add a chest loot to a player
+     *
+     * @param player The player to add a chest loot to
+     */
+    public void addChestLoot(Player player) {
+        this.chestsLooted.put(player.getUniqueId(), this.chestsLooted.getOrDefault(player.getUniqueId(), 0) + 1);
     }
 
     // TODO Game methods
@@ -314,6 +324,10 @@ public class GamePlayerData extends Data {
             }
             Location previousLocation = player.getLocation();
 
+            for (Player oPlayer : Bukkit.getOnlinePlayers()) {
+                oPlayer.showPlayer(plugin, player);
+            }
+
             // Teleport async into the arena so it loads a little more smoothly
             PaperLib.teleportAsync(player, loc).thenAccept(a -> {
 
@@ -326,7 +340,8 @@ public class GamePlayerData extends Data {
 
                 heal(player);
                 freeze(player);
-                kills.put(player, 0);
+                kills.put(player.getUniqueId(), 0);
+                chestsLooted.put(player.getUniqueId(), 0);
 
                 if (players.size() == 1 && status == Status.READY)
                     gameArenaData.setStatus(Status.WAITING);
@@ -335,8 +350,7 @@ public class GamePlayerData extends Data {
                 } else if (status == Status.WAITING) {
                     String broadcast = lang.player_joined_game
                             .replace("<arena>", gameArenaData.getName())
-                            .replace("<player>", player.getName()) + (gameArenaData.minPlayers - players.size() <= 0 ? "!" : ":" +
-                            lang.players_to_start.replace("<amount>", String.valueOf((gameArenaData.minPlayers - players.size()))));
+                            .replace("<player>", player.getName());
                     if (Config.broadcastJoinMessages) {
                         Util.broadcast(broadcast);
                     } else {
@@ -344,7 +358,7 @@ public class GamePlayerData extends Data {
                     }
                 }
                 kitHelp(player);
-                game.getKitManager().setKit(player, game.getKitManager().getKits().get(0));
+//                game.getKitManager().setKit(player, game.getKitManager().getKits().get(0));
 
                 game.gameBlockData.updateLobbyBlock();
                 game.gameArenaData.updateBoards();
@@ -363,13 +377,17 @@ public class GamePlayerData extends Data {
         Bukkit.getPluginManager().callEvent(new PlayerLeaveGameEvent(game, player, death));
         UUID uuid = player.getUniqueId();
         players.remove(uuid);
-        if (!death) allPlayers.remove(uuid); // Only remove the player if they voluntarily left the game
+        game.gameArenaData.aliveCount = lang.players_alive_num.replace("<num>", String.valueOf(players.size()));
+        if (!death) {
+            allPlayers.remove(uuid); // Only remove the player if they voluntarily left the game
+            game.gameArenaData.board.removeBoard(player);
+        }
         unFreeze(player);
         if (death) {
             if (Config.spectateEnabled && Config.spectateOnDeath && !game.isGameOver()) {
                 spectate(player);
-                player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 5, 1);
-                player.sendTitle(game.gameArenaData.getName(), Util.getColString(lang.spectator_start_title), 10, 100, 10);
+//                player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 5, 1);
+                player.sendTitle("", Util.getColString(lang.spectator_start_title), 10, 100, 10);
                 game.updateAfterDeath(player, true);
                 return;
             } else if (game.gameArenaData.getStatus() == Status.RUNNING)
@@ -382,9 +400,9 @@ public class GamePlayerData extends Data {
         playerData.restore(player);
         exit(player, previousLocation);
         playerManager.removePlayerData(player);
-        if (death) {
-            player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 5, 1);
-        }
+//        if (death) {
+//            player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 5, 1);
+//        }
         game.updateAfterDeath(player, death);
     }
 
@@ -426,6 +444,7 @@ public class GamePlayerData extends Data {
             playerManager.addSpectatorData(new PlayerData(spectator, game));
         }
         this.spectators.add(uuid);
+        spectator.getInventory().clear();
         spectator.setGameMode(GameMode.SURVIVAL);
         spectator.setCollidable(false);
         if (Config.spectateFly)

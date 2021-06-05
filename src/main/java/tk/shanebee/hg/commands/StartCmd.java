@@ -31,7 +31,7 @@ public class StartCmd extends BaseCmd {
 				Util.sendPrefixedMessage(sender, "&cGame has already started");
 			}
 		} else {
-			sender.sendMessage(lang.cmd_delete_noexist);
+			Util.sendPrefixedMessage(sender, lang.cmd_delete_noexist);
 		}
 		return true;
 	}

@@ -35,7 +35,7 @@ public class SetLobbyWallCmd extends BaseCmd {
 				Util.sendPrefixedMessage(player, lang.cmd_lobbywall_format);
 			}
 		} else {
-			player.sendMessage(lang.cmd_delete_noexist);
+			Util.sendPrefixedMessage(player, lang.cmd_delete_noexist);
 		}
 		return true;
 	}

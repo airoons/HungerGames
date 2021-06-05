@@ -47,7 +47,16 @@ public class Language {
     public String players_alive;
     public String players_alive_num;
     public String scoreboard_title;
-    public String scoreboard_arena;
+    public String scoreboard_line_1;
+    public String scoreboard_line_2;
+    public String scoreboard_line_3;
+    public String scoreboard_line_4;
+    public String scoreboard_line_5;
+    public String scoreboard_line_6;
+    public String scoreboard_line_7;
+    public String scoreboard_line_8;
+    public String scoreboard_line_9;
+    public String scoreboard_line_10;
     public String team_invite_1;
     public String team_invite_2;
     public String team_invite_3;
@@ -278,7 +287,16 @@ public class Language {
         winning_amount = lang.getString("winning-amount");
 
         scoreboard_title = lang.getString("scoreboard-title");
-        scoreboard_arena = lang.getString("scoreboard-arena");
+        scoreboard_line_1 = lang.getString("scoreboard-line-1");
+        scoreboard_line_2 = lang.getString("scoreboard-line-2");
+        scoreboard_line_3 = lang.getString("scoreboard-line-3");
+        scoreboard_line_4 = lang.getString("scoreboard-line-4");
+        scoreboard_line_5 = lang.getString("scoreboard-line-5");
+        scoreboard_line_6 = lang.getString("scoreboard-line-6");
+        scoreboard_line_7 = lang.getString("scoreboard-line-7");
+        scoreboard_line_8 = lang.getString("scoreboard-line-8");
+        scoreboard_line_9 = lang.getString("scoreboard-line-9");
+        scoreboard_line_10 = lang.getString("scoreboard-line-10");
         players_alive = lang.getString("players-alive");
         players_alive_num = lang.getString("players-alive-num");
         team_invite_1 = lang.getString("team-invite-1");

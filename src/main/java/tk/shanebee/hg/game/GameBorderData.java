@@ -64,14 +64,7 @@ public class GameBorderData extends Data {
     }
 
     public void setBorder(int time) {
-        Location center;
-        if (Config.centerSpawn && borderCenter == null) {
-            center = game.gameArenaData.spawns.get(0);
-        } else if (borderCenter != null) {
-            center = borderCenter;
-        } else {
-            center = game.gameArenaData.bound.getCenter();
-        }
+        Location center = game.gameArenaData.bound.getWorld().getSpawnLocation();
         World world = center.getWorld();
         assert world != null;
         WorldBorder border = world.getWorldBorder();

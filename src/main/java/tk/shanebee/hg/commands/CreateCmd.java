@@ -35,7 +35,7 @@ public class CreateCmd extends BaseCmd {
 					return true;
 				}
 				if (!Util.isInt(args[2]) || !Util.isInt(args[3]) || !Util.isInt(args[4])) {
-					player.sendMessage(lang.cmd_base_wrongusage + " " + sendHelpLine());
+					Util.sendPrefixedMessage(player, lang.cmd_base_wrongusage + " " + sendHelpLine());
 				} else if (Integer.parseInt(args[4]) % 30 != 0) {
 					Util.sendPrefixedMessage(player, lang.cmd_create_divisible_1);
 					Util.sendPrefixedMessage(player, lang.cmd_create_divisible_2);
