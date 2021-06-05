@@ -160,7 +160,7 @@ public class Util {
      */
     public static void broadcast(String s) {
         if (s.length() > 0) { // only send messages if its actually a message
-            Bukkit.broadcastMessage(getColString(HG.getPlugin().getLang().prefix + " " + s));
+            Bukkit.broadcastMessage(getColString(HG.getPlugin().getLang().prefix + s));
         }
     }
 
