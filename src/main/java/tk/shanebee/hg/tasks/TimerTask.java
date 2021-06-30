@@ -1,6 +1,7 @@
 package tk.shanebee.hg.tasks;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import tk.shanebee.hg.data.Config;
 import tk.shanebee.hg.data.Language;
 import tk.shanebee.hg.game.Game;
@@ -81,13 +82,16 @@ public class TimerTask implements Runnable {
 					if (asd == 0) {
 					    if (end_min.length() < 1) return;
                         game.getGamePlayerData().msgAll(end_min.replace("<minutes>", "" + minutes));
+                        game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BANJO, 1f, 1f);
                     } else {
 					    if (end_minsec.length() < 1) return;
                         game.getGamePlayerData().msgAll(end_minsec.replace("<minutes>", "" + minutes).replace("<seconds>", "" + asd));
+						game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BANJO, 1f, 1f);
                     }
 				} else {
 				    if (end_sec.length() < 1) return;
 				    game.getGamePlayerData().msgAll(end_sec.replace("<seconds>", "" + this.remainingtime));
+					game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BANJO, 1f, 1f);
                 }
 			}
 		}
@@ -98,6 +102,8 @@ public class TimerTask implements Runnable {
 		if (game.getTimer() != null) {
 			int m = game.getTimer().getRemainingtime() / 60;
 			int s = game.getTimer().getRemainingtime() % 60;
+			if (s < 0)
+				s = 0;
 
 			remainTime = (m > 9 ? m : "0" + m) + ":" + (s > 9 ? s : "0" + s);
 		}

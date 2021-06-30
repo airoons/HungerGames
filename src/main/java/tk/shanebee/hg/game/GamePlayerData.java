@@ -198,6 +198,24 @@ public class GamePlayerData extends Data {
     }
 
     /**
+     * Play a sound to all players/spectators in the game
+     *
+     * @param sound Sound
+     * @param volume Volume
+     * @param pitch Pitch
+     */
+    public void soundAll(Sound sound, float volume, float pitch) {
+        List<UUID> allPlayers = new ArrayList<>();
+        allPlayers.addAll(players);
+        allPlayers.addAll(spectators);
+        for (UUID u : allPlayers) {
+            Player p = Bukkit.getPlayer(u);
+            if (p != null)
+                p.playSound(p.getLocation(), sound, volume, pitch);
+        }
+    }
+
+    /**
      * Sends a message to all players/spectators
      * <b>Includes players who have died and left the game.
      * Used for broadcasting win messages</b>
@@ -358,12 +376,15 @@ public class GamePlayerData extends Data {
                     }
                 }
                 kitHelp(player);
+                player.playSound(player.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1f, 1f);
 //                game.getKitManager().setKit(player, game.getKitManager().getKits().get(0));
 
                 game.gameBlockData.updateLobbyBlock();
                 game.gameArenaData.updateBoards();
                 game.gameCommandData.runCommands(CommandType.JOIN, player);
             });
+
+            soundAll(Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1f, 1f);
         }
     }
 
@@ -408,6 +429,9 @@ public class GamePlayerData extends Data {
 
     void exit(Player player, @Nullable Location exitLocation) {
         GameArenaData gameArenaData = game.getGameArenaData();
+
+        gameArenaData.board.removeBoard(player);
+
         player.setInvulnerable(false);
         if (gameArenaData.getStatus() == Status.RUNNING)
             game.getGameBarData().removePlayer(player);

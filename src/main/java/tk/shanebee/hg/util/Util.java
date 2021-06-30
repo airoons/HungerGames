@@ -265,7 +265,7 @@ public class Util {
         if (bc != null)
             return bc.toString();
         else
-            return "No one";
+            return "Neviens";
     }
 
     public static void shootFirework(Location l) {

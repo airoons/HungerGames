@@ -1,6 +1,7 @@
 package tk.shanebee.hg.commands;
 
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.configuration.Configuration;
 import tk.shanebee.hg.data.PlayerSession;
 import tk.shanebee.hg.game.Bound;
@@ -21,7 +22,8 @@ public class SoundTestCmd extends BaseCmd {
 
 	@Override
 	public boolean run() {
-		player.playSound(player.getLocation(), args[1], Float.parseFloat(args[2]), Float.parseFloat(args[2]));
+		player.sendMessage("playing " + args[1] + " at volume " + args[2] + " and pitch " + args[3]);
+		player.playSound(player.getLocation(), Sound.valueOf(args[1]), Float.parseFloat(args[2]), Float.parseFloat(args[3]));
 
 		return true;
 	}

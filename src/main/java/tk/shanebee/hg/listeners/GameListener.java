@@ -228,6 +228,7 @@ public class GameListener implements Listener {
 
 			// Send death message to all players in game
 			gamePlayerData.msgAll(lang.death_fallen + " &d" + deathString);
+			gamePlayerData.soundAll(Sound.BLOCK_BEACON_DEACTIVATE, 1f, 1f);
 
 			leaderboard.addStat(player, Leaderboard.Stats.DEATHS);
 			leaderboard.addStat(player, Leaderboard.Stats.GAMES);
@@ -723,6 +724,8 @@ public class GameListener implements Listener {
 			if (playerManager.hasPlayerData(oPlayer) || playerManager.hasSpectatorData(oPlayer))
 				oPlayer.hidePlayer(plugin, player);
 		}
+
+		event.setJoinMessage(Util.getColString("&a+ &7" + event.getPlayer().getName()));
 	}
 
 	@EventHandler
@@ -738,6 +741,8 @@ public class GameListener implements Listener {
             playerData.setOnline(false);
 			playerData.getGame().getGamePlayerData().leaveSpectate(player);
 		}
+
+		event.setQuitMessage(Util.getColString("&c- &7" + event.getPlayer().getName()));
 	}
 
 	@EventHandler
@@ -765,6 +770,8 @@ public class GameListener implements Listener {
 				}
 			}
 		}
+
+        event.setFormat(Util.getColString("&7" + event.getPlayer().getName() + " &8» &f%2$s"));
 	}
 
 	@EventHandler

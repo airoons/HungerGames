@@ -1,9 +1,6 @@
 package tk.shanebee.hg.game;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
@@ -292,65 +289,17 @@ public class Game {
      * @param death Whether the game stopped after the result of a death (false = no winnings payed out)
      */
     public void stop(Boolean death) {
-        if (Config.borderEnabled) {
-            gameBorderData.resetBorder();
-        }
-        gameArenaData.bound.removeEntities();
         List<UUID> win = new ArrayList<>();
-        cancelTasks();
         for (UUID uuid : gamePlayerData.players) {
             Player player = Bukkit.getPlayer(uuid);
             if (player != null) {
                 PlayerData playerData = playerManager.getPlayerData(uuid);
-                Location previousLocation = playerData.getPreviousLocation();
 
                 gamePlayerData.heal(player);
-                playerData.restore(player);
                 win.add(uuid);
-                gamePlayerData.exit(player, previousLocation);
-                playerManager.removePlayerData(uuid);
             }
         }
 
-        for (UUID uuid : gamePlayerData.getSpectators()) {
-            Player spectator = Bukkit.getPlayer(uuid);
-            if (spectator != null) {
-                gamePlayerData.leaveSpectate(spectator);
-            }
-        }
-
-        if (gameArenaData.status == Status.RUNNING) {
-            bar.clearBar();
-        }
-
-        if (!win.isEmpty() && death) {
-            double db = (double) Config.cash / win.size();
-            for (UUID u : win) {
-                if (Config.giveReward) {
-                    Player p = Bukkit.getPlayer(u);
-                    assert p != null;
-                    if (!Config.rewardCommands.isEmpty()) {
-                        for (String cmd : Config.rewardCommands) {
-                            if (!cmd.equalsIgnoreCase("none"))
-                                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("<player>", p.getName()));
-                        }
-                    }
-                    if (!Config.rewardMessages.isEmpty()) {
-                        for (String msg : Config.rewardMessages) {
-                            if (!msg.equalsIgnoreCase("none"))
-                                Util.scm(p, msg.replace("<player>", p.getName()));
-                        }
-                    }
-                    if (Config.cash != 0) {
-                        Vault.economy.depositPlayer(Bukkit.getServer().getOfflinePlayer(u), db);
-                        Util.scm(p, lang.winning_amount.replace("<amount>", String.valueOf(db)));
-                    }
-                }
-                plugin.getLeaderboard().addStat(u, Leaderboard.Stats.WINS);
-                plugin.getLeaderboard().addStat(u, Leaderboard.Stats.GAMES);
-            }
-        }
-        gameBlockData.clearChests();
         String winner = Util.translateStop(Util.convertUUIDListToStringList(win));
 
         // Broadcast wins
@@ -361,33 +310,99 @@ public class Game {
             } else {
                 gamePlayerData.msgAllPlayers(broadcast);
             }
+            gamePlayerData.soundAll(Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f);
         }
-        if (gameBlockData.requiresRollback()) {
-            if (plugin.isEnabled()) {
-                new Rollback(this);
-            } else {
-                // Force rollback if server is stopping
-                gameBlockData.forceRollback();
+
+        cancelTasks();
+
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            for (UUID uuid : gamePlayerData.players) {
+                Player player = Bukkit.getPlayer(uuid);
+                if (player != null) {
+                    PlayerData playerData = playerManager.getPlayerData(uuid);
+                    Location previousLocation = playerData.getPreviousLocation();
+
+                    gamePlayerData.heal(player);
+                    playerData.restore(player);
+                    gamePlayerData.exit(player, previousLocation);
+                    playerManager.removePlayerData(uuid);
+                }
             }
-        } else {
-            gameArenaData.status = Status.READY;
-            gameBlockData.updateLobbyBlock();
-        }
-        gameArenaData.updateBoards();
-        gameCommandData.runCommands(CommandType.STOP, null);
 
-        // Call GameEndEvent
-        Collection<Player> winners = new ArrayList<>();
-        for (UUID uuid : win) {
-            winners.add(Bukkit.getPlayer(uuid));
-        }
+            if (Config.borderEnabled) {
+                gameBorderData.resetBorder();
+            }
 
-        // Game has ended, we can clear all players now
-        gamePlayerData.clearPlayers();
-        gamePlayerData.clearSpectators();
-        gamePlayerData.clearTeams();
-        resetRandomChests();
-        Bukkit.getPluginManager().callEvent(new GameEndEvent(this, winners, death));
+            gameArenaData.bound.removeEntities();
+
+            for (UUID uuid : gamePlayerData.getSpectators()) {
+                Player spectator = Bukkit.getPlayer(uuid);
+                if (spectator != null) {
+                    gamePlayerData.leaveSpectate(spectator);
+                }
+            }
+
+            if (gameArenaData.status == Status.RUNNING) {
+                bar.clearBar();
+            }
+
+            if (!win.isEmpty() && death) {
+                double db = (double) Config.cash / win.size();
+                for (UUID u : win) {
+                    if (Config.giveReward) {
+                        Player p = Bukkit.getPlayer(u);
+                        assert p != null;
+                        if (!Config.rewardCommands.isEmpty()) {
+                            for (String cmd : Config.rewardCommands) {
+                                if (!cmd.equalsIgnoreCase("none"))
+                                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("<player>", p.getName()));
+                            }
+                        }
+                        if (!Config.rewardMessages.isEmpty()) {
+                            for (String msg : Config.rewardMessages) {
+                                if (!msg.equalsIgnoreCase("none"))
+                                    Util.scm(p, msg.replace("<player>", p.getName()));
+                            }
+                        }
+                        if (Config.cash != 0) {
+                            Vault.economy.depositPlayer(Bukkit.getServer().getOfflinePlayer(u), db);
+                            Util.scm(p, lang.winning_amount.replace("<amount>", String.valueOf(db)));
+                        }
+                    }
+                    plugin.getLeaderboard().addStat(u, Leaderboard.Stats.WINS);
+                    plugin.getLeaderboard().addStat(u, Leaderboard.Stats.GAMES);
+                }
+            }
+            gameBlockData.clearChests();
+
+            if (gameBlockData.requiresRollback()) {
+                if (plugin.isEnabled()) {
+                    new Rollback(this);
+                } else {
+                    // Force rollback if server is stopping
+                    gameBlockData.forceRollback();
+                }
+            } else {
+                gameArenaData.status = Status.READY;
+                gameBlockData.updateLobbyBlock();
+            }
+            gameArenaData.updateBoards();
+
+            gameCommandData.runCommands(CommandType.STOP, null);
+
+            // Call GameEndEvent
+            Collection<Player> winners = new ArrayList<>();
+            for (UUID uuid : win) {
+                winners.add(Bukkit.getPlayer(uuid));
+            }
+
+            // Game has ended, we can clear all players now
+            gamePlayerData.clearPlayers();
+            gamePlayerData.clearSpectators();
+            gamePlayerData.clearTeams();
+            resetRandomChests();
+            Bukkit.getPluginManager().callEvent(new GameEndEvent(this, winners, death));
+        }, 200);
     }
 
     void updateAfterDeath(Player player, boolean death) {

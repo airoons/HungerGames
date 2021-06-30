@@ -1,6 +1,7 @@
 package tk.shanebee.hg.tasks;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.data.Language;
@@ -34,6 +35,7 @@ public class FreeRoamTask implements Runnable {
                 player.setHealth(20);
                 player.setFoodLevel(20);
                 game.getGamePlayerData().unFreeze(player);
+                player.playSound(player.getLocation(), Sound.BLOCK_END_PORTAL_SPAWN, 1f, 1f);
             }
         }
         this.id = Bukkit.getScheduler().scheduleSyncDelayedTask(HG.getPlugin(), this, roamTime * 20L);
@@ -43,6 +45,7 @@ public class FreeRoamTask implements Runnable {
     public void run() {
         if (roamTime > 0) {
             game.getGamePlayerData().msgAll(HG.getPlugin().getLang().roam_finished);
+            game.getGamePlayerData().soundAll(Sound.BLOCK_ANVIL_LAND, 1f, 1f);
             game.gracePeriod = false;
         }
     }

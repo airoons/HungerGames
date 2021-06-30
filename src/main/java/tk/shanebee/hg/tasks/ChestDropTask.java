@@ -1,9 +1,6 @@
 package tk.shanebee.hg.tasks;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import tk.shanebee.hg.HG;
@@ -68,6 +65,8 @@ public class ChestDropTask implements Runnable {
                 Util.scm(p, HG.getPlugin().getLang().chest_drop_1);
             }
         }
+
+        game.getGamePlayerData().soundAll(Sound.ENTITY_BAT_TAKEOFF, 1f, 1f);
     }
 
     public void shutdown() {

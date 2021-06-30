@@ -1,6 +1,7 @@
 package tk.shanebee.hg.tasks;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.data.Config;
@@ -45,6 +46,7 @@ public class StartingTask implements Runnable {
         } else {
             this.game.getGamePlayerData().msgAll(broadcast);
         }
+        game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 1f);
         this.id = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this, 5 * 20L, 20L);
     }
 
@@ -58,6 +60,7 @@ public class StartingTask implements Runnable {
             game.startGame();
         } else if (timer % 10 == 0 || timer <= 5) {
             game.getGamePlayerData().msgAll(lang.game_countdown.replace("<timer>", "" + timer));
+            game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 1f);
         }
     }
 
