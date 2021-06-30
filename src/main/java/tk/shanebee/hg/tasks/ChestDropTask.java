@@ -4,6 +4,7 @@ import org.bukkit.*;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import tk.shanebee.hg.HG;
+import tk.shanebee.hg.Status;
 import tk.shanebee.hg.data.Config;
 import tk.shanebee.hg.game.Bound;
 import tk.shanebee.hg.game.Game;
@@ -47,26 +48,42 @@ public class ChestDropTask implements Runnable {
         }
 
         y = y + 10;
-
         Location l = new Location(w, x, y, z);
+        String chestLoc = HG.getPlugin().getLang().chest_drop_4
+                .replace("<x>", String.valueOf(x))
+                .replace("<y>", String.valueOf(y))
+                .replace("<z>", String.valueOf(z));
 
-        FallingBlock fb = w.spawnFallingBlock(l, Bukkit.getServer().createBlockData(Material.STRIPPED_SPRUCE_WOOD));
-
-        chests.add(new ChestDrop(fb));
-
-        for (UUID u : game.getGamePlayerData().getPlayers()) {
+        for (UUID u : game.getGamePlayerData().getPlayersAndSpectators()) {
             Player p = Bukkit.getPlayer(u);
             if (p != null) {
                 Util.scm(p, HG.getPlugin().getLang().chest_drop_1);
-                Util.scm(p, HG.getPlugin().getLang().chest_drop_2
+                Util.scm(p, HG.getPlugin().getLang().chest_drop_3
                         .replace("<x>", String.valueOf(x))
                         .replace("<y>", String.valueOf(y))
                         .replace("<z>", String.valueOf(z)));
+                Util.scm(p, HG.getPlugin().getLang().chest_drop_4);
                 Util.scm(p, HG.getPlugin().getLang().chest_drop_1);
             }
         }
-
         game.getGamePlayerData().soundAll(Sound.ENTITY_BAT_TAKEOFF, 1f, 1f);
+
+        Bukkit.getScheduler().runTaskLater(game.getGameArenaData().getPlugin(), () -> {
+            if (game.getGameArenaData().getStatus() != Status.RUNNING) return;
+
+            for (UUID u : game.getGamePlayerData().getPlayersAndSpectators()) {
+                Player p = Bukkit.getPlayer(u);
+                if (p != null) {
+                    Util.scm(p, HG.getPlugin().getLang().chest_drop_1);
+                    Util.scm(p, HG.getPlugin().getLang().chest_drop_2);
+                    Util.scm(p, chestLoc);
+                    Util.scm(p, HG.getPlugin().getLang().chest_drop_1);
+                }
+            }
+            FallingBlock fb = w.spawnFallingBlock(l, Bukkit.getServer().createBlockData(Material.STRIPPED_SPRUCE_WOOD));
+            chests.add(new ChestDrop(fb));
+            game.getGamePlayerData().soundAll(Sound.ENTITY_BAT_TAKEOFF, 1f, 1f);
+        }, 600);
     }
 
     public void shutdown() {

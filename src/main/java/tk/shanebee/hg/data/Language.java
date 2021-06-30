@@ -70,6 +70,8 @@ public class Language {
     public String team_none;
     public String chest_drop_1;
     public String chest_drop_2;
+    public String chest_drop_3;
+    public String chest_drop_4;
     public String compass_nearest_player;
     public String roam_game_started;
     public String roam_time;
@@ -313,6 +315,8 @@ public class Language {
 
         chest_drop_1 = lang.getString("chest-drop-1");
         chest_drop_2 = lang.getString("chest-drop-2");
+        chest_drop_3 = lang.getString("chest-drop-3");
+        chest_drop_4 = lang.getString("chest-drop-4");
 
         compass_nearest_player = lang.getString("compass-nearest-player");
 

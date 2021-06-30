@@ -109,12 +109,11 @@ public class TimerTask implements Runnable {
 		}
 
 		game.getGameArenaData().setTimeLeft(remainTime);
-		game.getGameArenaData().updateBoards();
+//		game.getGameArenaData().updateBoards();
 	}
 
 	private boolean canAnnounceTime(int time) {
 		switch (time) {
-			case 600:
 			case 300:
 			case 180:
 			case 60:

@@ -26,7 +26,8 @@ public class StartCmd extends BaseCmd {
 			} else if (status == Status.COUNTDOWN) {
 				g.getStartingTask().stop();
 				g.startFreeRoam();
-				Util.sendPrefixedMessage(sender, "&aGame starting now");
+				g.startGame();
+				Util.sendPrefixedMessage(sender, "&aForce started");
 			} else {
 				Util.sendPrefixedMessage(sender, "&cGame has already started");
 			}

@@ -6,6 +6,7 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.Directional;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.Status;
 import tk.shanebee.hg.data.Config;
@@ -89,6 +90,13 @@ public class Game {
         gameArenaData.setStatus(isReady ? Status.READY : Status.BROKEN);
 
         this.kitManager = plugin.getKitManager();
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                gameArenaData.updateBoards();
+            }
+        }.runTaskTimer(plugin, 0L, 10L);
     }
 
     /**
@@ -402,6 +410,12 @@ public class Game {
             gamePlayerData.clearTeams();
             resetRandomChests();
             Bukkit.getPluginManager().callEvent(new GameEndEvent(this, winners, death));
+
+            gameArenaData.timeLeft = "00:00";
+
+            for (Player oPlayer : Bukkit.getOnlinePlayers())
+                for (Player otPlayer : Bukkit.getOnlinePlayers())
+                    otPlayer.showPlayer(plugin, oPlayer);
         }, 200);
     }
 

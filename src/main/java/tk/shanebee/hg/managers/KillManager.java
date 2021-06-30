@@ -90,7 +90,7 @@ public class KillManager {
         } else if (killer.getInventory().getItemInMainHand().getType() == Material.AIR) {
             weapon = "fist";
         } else {
-            weapon = killer.getInventory().getItemInMainHand().getType().name().toLowerCase();
+            weapon = killer.getInventory().getItemInMainHand().getType().name().toLowerCase().replaceAll("_", " ");
         }
         return (lang.death_player.replace("<player>", victimName)
                 .replace("<killer>", killer.getName())

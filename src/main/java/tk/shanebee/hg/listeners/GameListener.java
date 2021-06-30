@@ -594,7 +594,7 @@ public class GameListener implements Listener {
 		if (Config.breakblocks && gameManager.isInRegion(block.getLocation())) {
 			Game game = gameManager.getGame(block.getLocation());
 			Status status = game.getGameArenaData().getStatus();
-			if (status == Status.RUNNING || status == Status.BEGINNING) {
+			if (status == Status.RUNNING || status == Status.BEGINNING && game.getGameBlockData() != null) {
 				game.getGameBlockData().recordBlockBreak(block);
 			}
 		}

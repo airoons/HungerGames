@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Data class for holding a {@link Game Game's} players
@@ -80,6 +82,11 @@ public class GamePlayerData extends Data {
      */
     public List<UUID> getSpectators() {
         return new ArrayList<>(this.spectators);
+    }
+
+    public List<UUID> getPlayersAndSpectators() {
+        return Stream.concat(players.stream(), spectators.stream()).distinct()
+                .collect(Collectors.toList());
     }
 
     void clearSpectators() {
@@ -379,6 +386,8 @@ public class GamePlayerData extends Data {
                 player.playSound(player.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1f, 1f);
 //                game.getKitManager().setKit(player, game.getKitManager().getKits().get(0));
 
+                game.gameArenaData.aliveCount = lang.players_alive_num.replace("<num>", String.valueOf(players.size()));
+
                 game.gameBlockData.updateLobbyBlock();
                 game.gameArenaData.updateBoards();
                 game.gameCommandData.runCommands(CommandType.JOIN, player);
@@ -405,7 +414,7 @@ public class GamePlayerData extends Data {
         }
         unFreeze(player);
         if (death) {
-            if (Config.spectateEnabled && Config.spectateOnDeath && !game.isGameOver()) {
+            if (Config.spectateEnabled && Config.spectateOnDeath) {
                 spectate(player);
 //                player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 5, 1);
                 player.sendTitle("", Util.getColString(lang.spectator_start_title), 10, 100, 10);
@@ -509,8 +518,8 @@ public class GamePlayerData extends Data {
             if (mode == GameMode.SURVIVAL || mode == GameMode.ADVENTURE)
                 spectator.setAllowFlight(false);
         }
-        if (Config.spectateHide)
-            revealPlayer(spectator);
+//        if (Config.spectateHide)
+//            revealPlayer(spectator);
         exit(spectator, previousLocation);
         playerManager.removeSpectatorData(uuid);
     }

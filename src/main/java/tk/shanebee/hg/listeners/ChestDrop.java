@@ -102,6 +102,7 @@ public class ChestDrop implements Listener {
         if (event.getClickedBlock() == null) return;
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK && beforeBlock != null && event.getClickedBlock().getLocation().equals(beforeBlock.getLocation())) {
             Player player = event.getPlayer();
+            if (!playerManager.hasPlayerData(player.getUniqueId())) return;
             Game game = playerManager.getPlayerData(player.getUniqueId()).getGame();
             Random rg = new Random();
             invopener = player;
@@ -109,6 +110,8 @@ public class ChestDrop implements Listener {
             Inventory i = Bukkit.getServer().createInventory(player, 27);
             i.clear();
             int c = rg.nextInt(Config.randomChestMaxContent) + 1;
+            c = Math.max(c, 2);
+
             while (c != 0) {
                 ItemStack it = HG.getPlugin().getManager().randomItem(game,true);
                 if (it != null) {
