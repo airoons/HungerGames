@@ -67,6 +67,8 @@ team:
     allow-friendly-fire: false
     # When enabled, teammates can see each other if using invisibility potion
     can-see-friendly-invisibles: true
+    # Total amount of pre-defined teams
+    total-team-count: 24
 reward:
     # Whether players get a reward when the game is done!
     enabled: true

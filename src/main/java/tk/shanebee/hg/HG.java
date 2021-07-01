@@ -1,5 +1,6 @@
 package tk.shanebee.hg;
 
+import libs.fr.minuskube.inv.InventoryManager;
 import io.lumine.xikage.mythicmobs.MythicMobs;
 import io.lumine.xikage.mythicmobs.mobs.MobManager;
 import io.papermc.lib.PaperLib;
@@ -22,12 +23,7 @@ import tk.shanebee.hg.listeners.CancelListener;
 import tk.shanebee.hg.listeners.GameListener;
 import tk.shanebee.hg.listeners.McmmoListeners;
 import tk.shanebee.hg.listeners.WandListener;
-import tk.shanebee.hg.managers.ItemStackManager;
-import tk.shanebee.hg.managers.KillManager;
-import tk.shanebee.hg.managers.KitManager;
-import tk.shanebee.hg.managers.Manager;
-import tk.shanebee.hg.managers.Placeholders;
-import tk.shanebee.hg.managers.PlayerManager;
+import tk.shanebee.hg.managers.*;
 import tk.shanebee.hg.metrics.Metrics;
 import tk.shanebee.hg.metrics.MetricsHandler;
 import tk.shanebee.hg.util.NBTApi;
@@ -57,6 +53,8 @@ public class HG extends JavaPlugin {
 	private Config config;
 	private Manager manager;
 	private PlayerManager playerManager;
+	private TeamManager teamManager;
+	private InventoryManager inventoryManager;
 	private ArenaConfig arenaconfig;
 	private KillManager killManager;
 	private RandomItems randomItems;
@@ -116,6 +114,11 @@ public class HG extends JavaPlugin {
 		mobConfig = new MobConfig(this);
 		randomItems = new RandomItems(this);
         playerManager = new PlayerManager();
+        teamManager = new TeamManager();
+
+        inventoryManager = new InventoryManager(this);
+        inventoryManager.init();
+
 		arenaconfig = new ArenaConfig(this);
 		killManager = new KillManager();
 		manager = new Manager(this);
@@ -180,6 +183,7 @@ public class HG extends JavaPlugin {
         mobConfig = null;
         randomItems = null;
         playerManager = null;
+        teamManager = null;
         arenaconfig = null;
         killManager = null;
         manager = null;
@@ -222,6 +226,7 @@ public class HG extends JavaPlugin {
 			}
 		}
 		games.clear();
+		teamManager.clearTeams();
 	}
 
 	/** Get the instance of this plugin
@@ -273,7 +278,21 @@ public class HG extends JavaPlugin {
         return playerManager;
     }
 
-    /** Get an instance of the ArenaConfig
+	/** Get an instance of the TeamManager
+	 * @return TeamManager
+	 */
+	public TeamManager getTeamManager() {
+		return teamManager;
+	}
+
+	/** Get an instance of the SmartInv InventoryManager
+	 * @return InventoryManager
+	 */
+	public InventoryManager getInventoryManager() {
+		return inventoryManager;
+	}
+
+	/** Get an instance of the ArenaConfig
 	 * @return ArenaConfig
 	 */
 	public ArenaConfig getArenaConfig() {

@@ -5,6 +5,7 @@ import org.bukkit.OfflinePlayer;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.data.Language;
 import tk.shanebee.hg.data.Leaderboard;
+import tk.shanebee.hg.data.TeamData;
 
 /**
  * Internal placeholder class
@@ -48,6 +49,14 @@ public class Placeholders extends PlaceholderExpansion {
 
     @Override
     public String onRequest(OfflinePlayer player, String identifier) {
+        if (identifier.equalsIgnoreCase("team_prefix")) {
+            TeamData td = plugin.getTeamManager().getTeamData(player.getUniqueId());
+            if (td.getTeam() != null) {
+                return "&f#" + td.getTeam().getId() + " " + td.getTeam().getChatColor();
+            }
+            return "";
+        }
+
         if (identifier.startsWith("lb_player_")) {
             int leader = Integer.parseInt(identifier.replace("lb_player_", ""));
             if (leaderboard.getStatsPlayers(Leaderboard.Stats.WINS).size() >= leader)

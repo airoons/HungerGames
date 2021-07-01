@@ -51,7 +51,6 @@ public class GamePlayerData extends Data {
     // Data lists
     final Map<UUID, Integer> kills = new HashMap<>();
     final Map<UUID, Integer> chestsLooted = new HashMap<>();
-    final Map<String, Team> teams = new HashMap<>();
 
     protected GamePlayerData(Game game) {
         super(game);
@@ -327,6 +326,11 @@ public class GamePlayerData extends Data {
             if (!vaultCheck(player)) {
                 return;
             }
+            if (plugin.getTeamManager().getTeamData(player.getUniqueId()).getTeam() == null) {
+                Util.scm(player, lang.must_have_team);
+                return;
+            }
+
             // Call PlayerJoinGameEvent
             PlayerJoinGameEvent event = new PlayerJoinGameEvent(game, player);
             Bukkit.getPluginManager().callEvent(event);
@@ -528,18 +532,6 @@ public class GamePlayerData extends Data {
         for (Player player : Bukkit.getOnlinePlayers()) {
             player.showPlayer(plugin, hidden);
         }
-    }
-
-    public void addTeam(Team team) {
-        teams.put(team.getName(), team);
-    }
-
-    public void clearTeams() {
-        teams.clear();
-    }
-
-    public boolean hasTeam(String name) {
-        return teams.containsKey(name);
     }
 
     // UTIL

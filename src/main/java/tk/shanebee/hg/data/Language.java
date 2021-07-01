@@ -64,10 +64,14 @@ public class Language {
     public String team_prefix;
     public String team_suffix;
     public String joined_team;
+    public String left_team;
     public String team_created;
     public String team_already_exists;
     public String team_already_have;
     public String team_none;
+
+    public String team_gui_title;
+
     public String chest_drop_1;
     public String chest_drop_2;
     public String chest_drop_3;
@@ -189,6 +193,8 @@ public class Language {
     public String spectator_compass;
     public String spectator_compass_head_lore;
     public String spectator_start_title;
+    public String spectators;
+    public String spectator_gui_title;
     public String check_need_more_spawns;
     public String check_broken_debug;
     public String check_broken_debug_2;
@@ -210,6 +216,11 @@ public class Language {
     public List<String> kit_cancel_lore;
     public String kit_selected;
 
+    public List<String> team_select_lore;
+    public String must_have_team;
+    public String team_gui_item;
+    public String already_in_team;
+    public String team_max_size;
 
     public Language(HG plugin) {
         this.plugin = plugin;
@@ -308,10 +319,13 @@ public class Language {
         team_prefix = lang.getString("team-prefix");
         team_suffix = lang.getString("team-suffix");
         joined_team = lang.getString("joined-team");
+        left_team = lang.getString("left-team");
         team_created = lang.getString("team-created");
         team_already_exists = lang.getString("team-already-exists");
         team_already_have = lang.getString("team-already-have");
         team_none = lang.getString("team-none");
+
+        team_gui_title = lang.getString("team-gui-title");
 
         chest_drop_1 = lang.getString("chest-drop-1");
         chest_drop_2 = lang.getString("chest-drop-2");
@@ -433,6 +447,8 @@ public class Language {
         spectator_compass = lang.getString("spectator-compass");
         spectator_compass_head_lore = lang.getString("spectator-head-lore");
         spectator_start_title = lang.getString("spectator-start-title");
+        spectators = lang.getString("spectators");
+        spectator_gui_title = lang.getString("spectator-gui-title");
 
         status_running = lang.getString("status-running");
         status_stopped = lang.getString("status-stopped");
@@ -464,6 +480,12 @@ public class Language {
         kit_cancel_name = lang.getString("kit-cancel-name");
         kit_cancel_lore = lang.getStringList("kit-cancel-lore");
         kit_selected = lang.getString("kit-selected");
+
+        team_select_lore = lang.getStringList("team-select-lore");
+        must_have_team = lang.getString("must-have-team");
+        team_gui_item = lang.getString("team-gui-item");
+        already_in_team = lang.getString("already-in-team");
+        team_max_size = lang.getString("team-max-size");
     }
 
 }

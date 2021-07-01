@@ -1,5 +1,7 @@
 package tk.shanebee.hg.listeners;
 
+import me.MrGraycat.eGlow.API.EGlowAPI;
+import me.MrGraycat.eGlow.EGlow;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -33,10 +35,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.Status;
-import tk.shanebee.hg.data.Config;
-import tk.shanebee.hg.data.Language;
-import tk.shanebee.hg.data.Leaderboard;
-import tk.shanebee.hg.data.PlayerData;
+import tk.shanebee.hg.data.*;
 import tk.shanebee.hg.events.ChestOpenEvent;
 import tk.shanebee.hg.events.PlayerDeathGameEvent;
 import tk.shanebee.hg.game.Game;
@@ -44,6 +43,7 @@ import tk.shanebee.hg.game.GameArenaData;
 import tk.shanebee.hg.game.GameBlockData;
 import tk.shanebee.hg.game.GameCommandData.CommandType;
 import tk.shanebee.hg.game.GamePlayerData;
+import tk.shanebee.hg.gui.SpectatorGUI;
 import tk.shanebee.hg.managers.KillManager;
 import tk.shanebee.hg.managers.Manager;
 import tk.shanebee.hg.managers.PlayerManager;
@@ -392,7 +392,8 @@ public class GameListener implements Listener {
 
     private void handleSpectatorCompass(Player player) {
         GamePlayerData gamePlayerData = playerManager.getSpectatorData(player).getGame().getGamePlayerData();
-        gamePlayerData.getSpectatorGUI().openInventory(player);
+		SpectatorGUI spectatorGUI = new SpectatorGUI(gamePlayerData.getGame());
+        spectatorGUI.open(player, gamePlayerData.getGame());
     }
 
 	@EventHandler
@@ -742,6 +743,11 @@ public class GameListener implements Listener {
 			playerData.getGame().getGamePlayerData().leaveSpectate(player);
 		}
 
+		TeamData td = HG.getPlugin().getTeamManager().getTeamData(player.getUniqueId());
+		if (td.getTeam() != null) {
+			td.getTeam().leave(player, true);
+		}
+
 		event.setQuitMessage(Util.getColString("&c- &7" + event.getPlayer().getName()));
 	}
 
@@ -759,6 +765,7 @@ public class GameListener implements Listener {
 
 	@EventHandler
 	private void onChat(AsyncPlayerChatEvent event) {
+		boolean isSpectator = false;
 		if (!Config.spectateChat) {
 			Player spectator = event.getPlayer();
 			if (playerManager.hasSpectatorData(spectator)) {
@@ -768,10 +775,11 @@ public class GameListener implements Listener {
 					Player player = Bukkit.getPlayer(uuid);
 					event.getRecipients().remove(player);
 				}
+				isSpectator = true;
 			}
 		}
 
-        event.setFormat(Util.getColString("&7" + event.getPlayer().getName() + " &8» &f%2$s"));
+        event.setFormat(Util.getColString((isSpectator ? "&8[&f" + lang.spectators + "&8] &7" : "&7") + event.getPlayer().getName() + " &8» &f%2$s"));
 	}
 
 	@EventHandler

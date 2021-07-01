@@ -1,9 +1,13 @@
 package tk.shanebee.hg.game;
 
+import me.MrGraycat.eGlow.API.EGlowAPI;
+import me.MrGraycat.eGlow.API.Enum.EGlowColor;
+import me.MrGraycat.eGlow.EGlow;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tk.shanebee.hg.HG;
-import tk.shanebee.hg.data.PlayerData;
+import tk.shanebee.hg.data.TeamData;
 import tk.shanebee.hg.util.Util;
 
 import java.util.ArrayList;
@@ -15,56 +19,81 @@ import java.util.UUID;
  */
 public class Team {
 
-    private final String name;
-    private final UUID leader;
+    private final String id;
     private final List<UUID> players = new ArrayList<>();
-    private final List<UUID> pending = new ArrayList<>();
-    private final org.bukkit.scoreboard.Team bukkitTeam;
+    private final EGlowColor glowColor;
+//    private final org.bukkit.scoreboard.Team bukkitTeam;
 
-    public Team(Player leader, String name, Game game) {
+    public Team(Player leader, String id, EGlowColor glowColor) {
         HG plugin = HG.getPlugin();
-        this.name = name;
-        this.leader = leader.getUniqueId();
-        PlayerData playerData = plugin.getPlayerManager().getPlayerData(leader);
+        this.id = id;
+        TeamData td = plugin.getTeamManager().getTeamData(leader.getUniqueId());
         players.add(leader.getUniqueId());
-        playerData.setTeam(this);
-        playerData.setPendingTeam(null);
+        td.setTeam(this);
+
+        EGlowAPI eGlowAPI = EGlow.getAPI();
+        this.glowColor = glowColor;
+        eGlowAPI.enableGlow(leader, glowColor);
+        eGlowAPI.addCustomGlowReceiver(leader, leader);
 
         // Board/McTeam stuff
-        bukkitTeam = game.gameArenaData.getBoard().registerTeam(name);
-        bukkitTeam.addEntry(leader.getName());
+//        bukkitTeam = game.gameArenaData.getBoard().registerTeam(id+);
+//        bukkitTeam.addEntry(leader.getName());
     }
 
     /**
-     * Invite a player to this team
-     * <p>This will send the player a message inviting them to the team</p>
+     * Add a player to this team
      *
-     * @param player Player to invite
+     * @param player Player to add
      */
-    public void invite(Player player) {
-        Player leader = Bukkit.getPlayer(this.leader);
-        assert leader != null;
-        Util.scm(player, HG.getPlugin().getLang().team_invite_1);
-        Util.scm(player, HG.getPlugin().getLang().team_invite_2.replace("<inviter>", leader.getName()));
-        Util.scm(player, HG.getPlugin().getLang().team_invite_3);
-        Util.scm(player, HG.getPlugin().getLang().team_invite_4);
-        pending.add(player.getUniqueId());
-        HG.getPlugin().getPlayerManager().getData(player).setPendingTeam(this);
-    }
-
-    /**
-     * Accept the invite to this team
-     *
-     * @param player Player to force to accept the invite
-     */
-    public void acceptInvite(Player player) {
-        PlayerData playerData = HG.getPlugin().getPlayerManager().getPlayerData(player);
-        playerData.setPendingTeam(null);
-        playerData.setTeam(this);
-        pending.remove(player.getUniqueId());
+    public void join(Player player) {
+        TeamData td = HG.getPlugin().getTeamManager().getTeamData(player.getUniqueId());
+        td.setTeam(this);
         players.add(player.getUniqueId());
         Util.scm(player, HG.getPlugin().getLang().joined_team);
-        bukkitTeam.addEntry(player.getName());
+//        bukkitTeam.addEntry(player.getName());
+
+        EGlowAPI eGlowAPI = EGlow.getAPI();
+
+        ArrayList<Player> teamOnline = new ArrayList<>();
+        for (UUID uuid : players) {
+            Player p = Bukkit.getPlayer(uuid);
+            if (p != null) {
+                teamOnline.add(p);
+                eGlowAPI.addCustomGlowReceiver(p, player);
+                eGlowAPI.enableGlow(p, glowColor);
+            }
+        }
+
+        eGlowAPI.setCustomGlowReceivers(player, teamOnline);
+        eGlowAPI.enableGlow(player, glowColor);
+    }
+
+    /**
+     * Remove a player from this team
+     *
+     * @param player Player to remove
+     */
+    public void leave(Player player, boolean disableGlow) {
+        TeamData td = HG.getPlugin().getTeamManager().getTeamData(player.getUniqueId());
+        td.setTeam(null);
+        players.remove(player.getUniqueId());
+        Util.scm(player, HG.getPlugin().getLang().left_team);
+
+        EGlowAPI eGlowAPI = EGlow.getAPI();
+
+        for (UUID uuid : players) {
+            Player p = Bukkit.getPlayer(uuid);
+            if (p != null) {
+                eGlowAPI.removeCustomGlowReceiver(p, player);
+                eGlowAPI.disableGlow(p);
+                eGlowAPI.enableGlow(p, glowColor);
+                eGlowAPI.removeCustomGlowReceiver(player, p);
+            }
+        }
+
+        if (disableGlow)
+            eGlowAPI.disableGlow(player);
     }
 
     /**
@@ -78,16 +107,6 @@ public class Team {
     }
 
     /**
-     * Check if a player is pending an invite for this team
-     *
-     * @param uuid UUID of player to check
-     * @return True if this player is currently pending an invite for this team.
-     */
-    public boolean isPending(UUID uuid) {
-        return (pending.contains(uuid));
-    }
-
-    /**
      * Get the players on this team
      *
      * @return List of UUIDs of players on this team
@@ -97,30 +116,12 @@ public class Team {
     }
 
     /**
-     * Get the pending players on this team
-     *
-     * @return List of UUIDs of players pending to be on this team
-     */
-    public List<UUID> getPenders() {
-        return pending;
-    }
-
-    /**
-     * Get the leader of this team
-     *
-     * @return UUID of player who is leading this team
-     */
-    public UUID getLeader() {
-        return leader;
-    }
-
-    /**
-     * Get the name of this team
+     * Get the id of this team
      *
      * @return Name of team
      */
-    public String getName() {
-        return name;
+    public String getId() {
+        return id;
     }
 
     /**
@@ -139,7 +140,10 @@ public class Team {
 
     @Override
     public String toString() {
-        return "Team{leader=" + leader + ", players=" + players + ", pending=" + pending + '}';
+        return "Team{players=" + players + '}';
     }
 
+    public ChatColor getChatColor() {
+        return Util.getChatColorFromGlow(glowColor);
+    }
 }

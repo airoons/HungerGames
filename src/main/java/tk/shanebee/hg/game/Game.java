@@ -407,7 +407,6 @@ public class Game {
             // Game has ended, we can clear all players now
             gamePlayerData.clearPlayers();
             gamePlayerData.clearSpectators();
-            gamePlayerData.clearTeams();
             resetRandomChests();
             Bukkit.getPluginManager().callEvent(new GameEndEvent(this, winners, death));
 
@@ -478,7 +477,7 @@ public class Game {
     boolean isGameOver() {
         if (gamePlayerData.players.size() <= 1) return true;
         for (UUID uuid : gamePlayerData.players) {
-            Team team = playerManager.getPlayerData(uuid).getTeam();
+            Team team = plugin.getTeamManager().getTeamData(uuid).getTeam();
 
             if (team != null && (team.getPlayers().size() >= gamePlayerData.players.size())) {
                 for (UUID u : gamePlayerData.players) {

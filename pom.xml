@@ -44,6 +44,10 @@
             <id>IntellectualSites</id>
             <url>https://mvn.intellectualsites.com/content/repositories/releases/</url>
         </repository>
+        <repository>
+            <id>dmulloy2-repo</id>
+            <url>https://repo.dmulloy2.net/repository/public/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -135,6 +139,13 @@
             <version>1.2.1</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>me.MrGraycat.eGlow</groupId>
+            <artifactId>EGlow</artifactId>
+            <version>3.0.9</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/depend/eGlow 3.0.9 1.9.4-1.17.jar</systemPath>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -146,10 +157,6 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-jar-plugin</artifactId>
                         <version>3.2.0</version>
-<!--                        <configuration>-->
-<!--                            &lt;!&ndash; Put here wherever you would like the plugin to build &ndash;&gt;-->
-<!--                            <outputDirectory>/Users/ShaneBee/Desktop/Server/1-16-HG-TEST/plugins</outputDirectory>-->
-<!--                        </configuration>-->
                     </plugin>
                 </plugins>
             </build>

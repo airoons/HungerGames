@@ -1,17 +1,16 @@
 package tk.shanebee.hg.gui;
 
+import libs.fr.minuskube.inv.ClickableItem;
+import libs.fr.minuskube.inv.InventoryManager;
+import libs.fr.minuskube.inv.SmartInventory;
+import libs.fr.minuskube.inv.content.InventoryContents;
+import libs.fr.minuskube.inv.content.InventoryProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.jetbrains.annotations.NotNull;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.game.Game;
 import tk.shanebee.hg.util.Util;
@@ -19,34 +18,50 @@ import tk.shanebee.hg.util.Util;
 import java.util.Arrays;
 import java.util.UUID;
 
-public class SpectatorGUI implements InventoryHolder, Listener {
+public class SpectatorGUI implements InventoryProvider {
 
-    private final Inventory inv;
     private final Game game;
+    private final InventoryManager invManager;
+    private SmartInventory inventory;
 
     public SpectatorGUI(Game game) {
+        this.invManager = HG.getPlugin().getInventoryManager();
         this.game = game;
+    }
+
+    private void load(Game game) {
         int size = (game.getGameArenaData().getMaxPlayers() / 9) + 1;
-        inv = Bukkit.createInventory(this, 9 * Math.min(size, 6), game.getGameArenaData().getName());
-        Bukkit.getPluginManager().registerEvents(this, HG.getPlugin());
+        this.inventory = SmartInventory.builder()
+                .manager(invManager)
+                .provider(new SpectatorGUI(game))
+                .size(Math.min(size, 6), 9)
+                .title(HG.getPlugin().getLang().team_gui_title)
+                .build();
     }
 
-    @NotNull
+    public void open(Player player, Game game) {
+        this.load(game);
+        this.inventory.open(player);
+    }
+
     @Override
-    public Inventory getInventory() {
-        return inv;
-    }
-
-    private void initializeItems() {
-        inv.clear();
-        int i = 0;
+    public void init(Player player, InventoryContents contents) {
         for (UUID uuid : game.getGamePlayerData().getPlayers()) {
-            Player player = Bukkit.getPlayer(uuid);
-            if (player == null) continue;
-            inv.setItem(i, getHead(player));
-            i++;
+            Player gPlayer = Bukkit.getPlayer(uuid);
+            if (gPlayer == null) continue;
+            contents.add(ClickableItem.of(getHead(gPlayer),
+                e -> {
+                    if (e.getCurrentItem() == null) return;
+                    Player clicked = getClicked(((SkullMeta) e.getCurrentItem().getItemMeta()));
+                    if (clicked == null) return;
+                    e.getWhoClicked().teleport(clicked);
+                }
+            ));
         }
     }
+
+    @Override
+    public void update(Player player, InventoryContents contents) {}
 
     private ItemStack getHead(OfflinePlayer player) {
         ItemStack head = new ItemStack(Material.PLAYER_HEAD);
@@ -60,31 +75,9 @@ public class SpectatorGUI implements InventoryHolder, Listener {
         return head;
     }
 
-    public void openInventory(Player player) {
-        player.openInventory(inv);
-        initializeItems();
-    }
-
-    @EventHandler
-    private void onClick(InventoryClickEvent event) {
-        if (inv.getHolder() != this) return;
-        if (!game.getGamePlayerData().getSpectators().contains(event.getWhoClicked().getUniqueId())) return;
-
-        event.setCancelled(true);
-        Player player = ((Player) event.getWhoClicked());
-        ItemStack clickedItem = event.getCurrentItem();
-
-        if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
-        if (!(clickedItem.getItemMeta() instanceof SkullMeta)) return;
-        Player clicked = getClicked(((SkullMeta) clickedItem.getItemMeta()));
-        if (clicked == null) return;
-        player.teleport(clicked);
-    }
-
     private Player getClicked(SkullMeta meta) {
         OfflinePlayer player = meta.getOwningPlayer();
         if (player == null || !player.isOnline() || !game.getGamePlayerData().getPlayers().contains(player.getUniqueId())) return null;
         return ((Player) player);
     }
-
 }

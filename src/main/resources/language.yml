@@ -43,6 +43,8 @@ winning-amount: '&7You received &b$<amount> &7for winning &3&lHunger&b&lGames!'
 spectator-compass: '&3Spectator Compass'
 spectator-head-lore: '&7Click to TP to player'
 spectator-start-title: 'You are now spectating!'
+spectators: 'Spectators'
+spectator-gui-title: 'Spectate'
 
 #  KIT MESSAGES
 kit-join-header: '&c&l>&7&l----------[&f&lWelcome to Hunger&f&lGames&7&l]&7&l----------&c&l<'
@@ -73,6 +75,7 @@ team-invite-2: '| &f<inviter> &3just invited you to a &fTeam&3!'
 team-invite-3: '| &3Type &f/hg team accept &3To join!'
 team-invite-4: '&6*&b&m                                                                             &6*'
 joined-team: '&3You successfully joined this team!'
+left-team: '&cYou have left your team!'
 # <name> will be replaced with team name
 team-prefix: "&7[&aTeam-<name>&7]"
 team-suffix: ""
@@ -80,6 +83,7 @@ team-created: "&aCreated team: &b<name>"
 team-already-exists: "&cTeam &b<name> &calready exists."
 team-already-have: "&cYou have already created a team: &b<name>"
 team-none: "&cYou do not have a team, create one first with command &b'/hg team create <name>'"
+team-gui-title: "&lSelect team"
 
 #  CHEST DROPS
 chest-drop-1: '&6*&b&m                                                                                   &6*'
@@ -288,3 +292,11 @@ kit-cancel-name: '&c&lCANCEL'
 kit-cancel-lore:
   - '&bClick to go back to kit selection'
 kit-selected: "&7You have selected kit &r'&b<name>&r'"
+team-select-lore:
+  - '&bClick join!'
+  - ''
+  - '&7Team members:'
+must-have-team: "&cYou must have a team to join!"
+team-gui-item: "&fTeam #"
+already-in-team: "&cYou already are in this team!"
+team-max-size: "&cTeam has reached max size!"

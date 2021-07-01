@@ -63,7 +63,7 @@ public class Board {
         team.setPrefix(prefix);
         String suffix = Util.getColString(" " + plugin.getLang().team_suffix.replace("<name>", name));
         team.setSuffix(suffix);
-        team.setColor(COLORS[game.gamePlayerData.teams.size() % COLORS.length]);
+        team.setColor(COLORS[plugin.getTeamManager().getTeamSize() % COLORS.length]);
         if (Config.hideNametags && Config.team_showTeamNames) {
             team.setOption(Option.NAME_TAG_VISIBILITY, OptionStatus.FOR_OTHER_TEAMS);
         }

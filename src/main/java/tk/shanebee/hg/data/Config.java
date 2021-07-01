@@ -45,6 +45,7 @@ public class Config {
     public static int team_maxTeamSize;
     public static boolean team_friendly_fire;
     public static boolean team_see_invis;
+    public static int total_team_count;
 
     //Reward info
     public static boolean giveReward;
@@ -135,6 +136,7 @@ public class Config {
         team_showTeamNames = config.getBoolean("team.show-team-nametags");
         team_friendly_fire = config.getBoolean("team.allow-friendly-fire");
         team_see_invis = config.getBoolean("team.can-see-friendly-invisibles");
+        total_team_count = config.getInt("team.total-team-count");
 
         giveReward = config.getBoolean("reward.enabled");
         cash = config.getInt("reward.cash");

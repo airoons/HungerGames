@@ -80,7 +80,7 @@ public class CommandListener implements CommandExecutor, TabCompleter {
 				if (args.length == 3 && args[1].equalsIgnoreCase("tp")) {
                     PlayerData pd = playerManager.getPlayerData(((Player) sender).getUniqueId());
                     if (pd == null) return ImmutableList.of();
-                    Team team = pd.getTeam();
+                    Team team = plugin.getTeamManager().getTeamData(pd.getUuid()).getTeam();
                     if (team != null) {
                         List<String> teamMembers = new ArrayList<>();
                         for (UUID member : team.getPlayers()) {

@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import tk.shanebee.hg.data.TeamData;
 import tk.shanebee.hg.game.Game;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.data.PlayerData;
@@ -59,6 +60,7 @@ public class CompassTask implements Runnable {
 	private String[] getNearestPlayer(Player p, PlayerData pd) {
 
 		Game g = pd.getGame();
+		TeamData td = g.getGameArenaData().getPlugin().getTeamManager().getTeamData(p.getUniqueId());
 
 		int x = p.getLocation().getBlockX();
 		int y = p.getLocation().getBlockY();
@@ -72,7 +74,7 @@ public class CompassTask implements Runnable {
 
 			Player p2 = Bukkit.getPlayer(u);
 
-			if (p2 != null && !p2.equals(p) && !pd.isOnTeam(u)) {
+			if (p2 != null && !p2.equals(p) && !td.isOnTeam(u)) {
 
 				Location l = p2.getLocation();
 

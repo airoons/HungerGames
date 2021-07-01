@@ -1,5 +1,6 @@
 package tk.shanebee.hg.util;
 
+import me.MrGraycat.eGlow.API.Enum.EGlowColor;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -20,14 +21,13 @@ import org.jetbrains.annotations.NotNull;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.data.Config;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Generalized utility class for shortcut methods
@@ -38,6 +38,17 @@ public class Util {
     private static final Logger LOGGER = Bukkit.getLogger();
     public static final BlockFace[] faces = new BlockFace[]{BlockFace.EAST, BlockFace.WEST, BlockFace.NORTH, BlockFace.SOUTH};
     private static final Pattern HEX_PATTERN = Pattern.compile("<#([A-Fa-f0-9]){6}>");
+    public static final Map<EGlowColor, ChatColor> mappedColors = Stream.of(new Object[][] {
+            {EGlowColor.RED, ChatColor.RED},
+            {EGlowColor.GOLD, ChatColor.GOLD},
+            {EGlowColor.YELLOW, ChatColor.YELLOW},
+            {EGlowColor.GREEN, ChatColor.GREEN},
+            {EGlowColor.DARK_GREEN, ChatColor.DARK_GREEN},
+            {EGlowColor.AQUA, ChatColor.AQUA},
+            {EGlowColor.BLUE, ChatColor.BLUE},
+            {EGlowColor.PURPLE, ChatColor.DARK_PURPLE},
+            {EGlowColor.PINK, ChatColor.LIGHT_PURPLE}
+    }).collect(Collectors.toMap(data -> (EGlowColor) data[0], data -> (ChatColor) data[1]));
 
     /**
      * Log a message to console prefixed with the plugin's name
@@ -375,4 +386,7 @@ public class Util {
         }
     }
 
+    public static ChatColor getChatColorFromGlow(EGlowColor glowColor) {
+        return mappedColors.getOrDefault(glowColor, ChatColor.WHITE);
+    }
 }

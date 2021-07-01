@@ -62,7 +62,7 @@ public class ChestDropTask implements Runnable {
                         .replace("<x>", String.valueOf(x))
                         .replace("<y>", String.valueOf(y))
                         .replace("<z>", String.valueOf(z)));
-                Util.scm(p, HG.getPlugin().getLang().chest_drop_4);
+                Util.scm(p, chestLoc);
                 Util.scm(p, HG.getPlugin().getLang().chest_drop_1);
             }
         }

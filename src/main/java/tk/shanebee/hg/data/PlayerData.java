@@ -39,8 +39,6 @@ public class PlayerData implements Cloneable {
     private boolean online;
 
     //InGame data
-    private Team team;
-    private Team pendingTeam;
     private final Game game;
 
     /**
@@ -104,58 +102,12 @@ public class PlayerData implements Cloneable {
     }
 
     /**
-     * Check if a player is on a team
-     *
-     * @param uuid Uuid of player to check
-     * @return True if player is on a team
-     */
-    public boolean isOnTeam(UUID uuid) {
-        return (team != null && team.isOnTeam(uuid));
-    }
-
-    /**
      * Get the game of this player data
      *
      * @return The game of this player data
      */
     public Game getGame() {
         return game;
-    }
-
-    /**
-     * Get the team of this player data
-     *
-     * @return The team
-     */
-    public Team getTeam() {
-        return team;
-    }
-
-    /**
-     * Set the team of this player data
-     *
-     * @param team The team to set
-     */
-    public void setTeam(Team team) {
-        this.team = team;
-    }
-
-    /**
-     * Get the pending team of this player data
-     *
-     * @return Pending team of this player data
-     */
-    public Team getPendingTeam() {
-        return pendingTeam;
-    }
-
-    /**
-     * Set the pending team of this player data
-     *
-     * @param pendingTeam Team for pending
-     */
-    public void setPendingTeam(Team pendingTeam) {
-        this.pendingTeam = pendingTeam;
     }
 
     /**
@@ -228,8 +180,6 @@ public class PlayerData implements Cloneable {
                 ", saturation=" + saturation +
                 ", mode=" + mode +
                 ", uuid=" + uuid +
-                ", team=" + team +
-                ", pending=" + pendingTeam +
                 ", game=" + game +
                 '}';
     }
