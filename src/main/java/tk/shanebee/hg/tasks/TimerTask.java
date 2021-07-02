@@ -63,11 +63,11 @@ public class TimerTask implements Runnable {
 			game.getGamePlayerData().msgAll(lang.game_chest_refill);
 		}
 
-		int refillRepeat = gameArenaData.getChestRefillRepeat();
-		if (timer == refillRepeat) {
-			game.getGameBlockData().refillChests();
-			game.getGamePlayerData().msgAll(lang.game_chest_refill);
-		}
+//		int refillRepeat = gameArenaData.getChestRefillRepeat();
+//		if (timer == refillRepeat) {
+//			game.getGameBlockData().refillChests();
+//			game.getGamePlayerData().msgAll(lang.game_chest_refill);
+//		}
 
 		if (remainingtime == teleportTimer && Config.teleportEnd) {
 			game.getGamePlayerData().msgAll(lang.game_almost_over);

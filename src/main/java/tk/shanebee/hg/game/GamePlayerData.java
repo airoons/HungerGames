@@ -13,6 +13,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.Nullable;
 import tk.shanebee.hg.Status;
+import tk.shanebee.hg.commands.TeamCmd;
 import tk.shanebee.hg.data.Config;
 import tk.shanebee.hg.data.PlayerData;
 import tk.shanebee.hg.events.PlayerJoinGameEvent;
@@ -327,6 +328,7 @@ public class GamePlayerData extends Data {
                 return;
             }
             if (plugin.getTeamManager().getTeamData(player.getUniqueId()).getTeam() == null) {
+                TeamCmd.openGUI(player);
                 Util.scm(player, lang.must_have_team);
                 return;
             }

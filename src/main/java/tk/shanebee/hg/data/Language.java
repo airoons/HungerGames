@@ -35,6 +35,7 @@ public class Language {
     public String arena_not_ready;
     public String arena_spectate;
     public String game_full;
+    public String game_over;
     public String player_won;
     public String winning_amount;
     public String kit_join_header;
@@ -290,6 +291,7 @@ public class Language {
         arena_not_ready = lang.getString("arena-not-ready");
         arena_spectate = lang.getString("arena-spectate");
         game_full = lang.getString("game-full");
+        game_over = lang.getString("game-over");
         player_won = lang.getString("player-won");
 
         kit_join_header = lang.getString("kit-join-header");

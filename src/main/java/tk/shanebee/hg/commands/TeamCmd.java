@@ -1,5 +1,6 @@
 package tk.shanebee.hg.commands;
 
+import org.bukkit.entity.Player;
 import tk.shanebee.hg.gui.TeamGUI;
 
 public class TeamCmd extends BaseCmd {
@@ -18,8 +19,11 @@ public class TeamCmd extends BaseCmd {
 
     @Override
     public boolean run() {
-        teamGUI.open(player);
+        openGUI(player);
         return true;
     }
 
+    public static void openGUI(Player player) {
+        teamGUI.open(player);
+    }
 }

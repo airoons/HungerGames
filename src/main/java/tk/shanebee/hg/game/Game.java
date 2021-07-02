@@ -315,6 +315,12 @@ public class Game {
             String broadcast = lang.player_won.replace("<arena>", gameArenaData.name).replace("<winner>", winner);
             if (Config.broadcastWinMessages) {
                 Util.broadcast(broadcast);
+
+                String title = Util.getColString(lang.game_over);
+                String subtitle = Util.getColString(broadcast);
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    player.sendTitle(title, subtitle, 5, 100, 5);
+                }
             } else {
                 gamePlayerData.msgAllPlayers(broadcast);
             }

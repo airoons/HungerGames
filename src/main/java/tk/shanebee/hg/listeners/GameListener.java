@@ -40,11 +40,8 @@ import tk.shanebee.hg.Status;
 import tk.shanebee.hg.data.*;
 import tk.shanebee.hg.events.ChestOpenEvent;
 import tk.shanebee.hg.events.PlayerDeathGameEvent;
-import tk.shanebee.hg.game.Game;
-import tk.shanebee.hg.game.GameArenaData;
-import tk.shanebee.hg.game.GameBlockData;
+import tk.shanebee.hg.game.*;
 import tk.shanebee.hg.game.GameCommandData.CommandType;
-import tk.shanebee.hg.game.GamePlayerData;
 import tk.shanebee.hg.gui.SpectatorGUI;
 import tk.shanebee.hg.managers.KillManager;
 import tk.shanebee.hg.managers.Manager;
@@ -187,7 +184,17 @@ public class GameListener implements Listener {
 				player.setFireTicks(0);
 				return;
 			}
-			if (event instanceof EntityDamageByEntityEvent) return;
+			if (event instanceof EntityDamageByEntityEvent) {
+				Team team = plugin.getTeamManager().getTeamData(player.getUniqueId()).getTeam();
+				if (team == null)
+					return;
+
+				if (team == plugin.getTeamManager().getTeamData( ((EntityDamageByEntityEvent) event).getDamager().getUniqueId() ).getTeam()) {
+					event.setCancelled(true);
+				}
+
+				return;
+			}
 			PlayerData pd = playerManager.getPlayerData(player);
 			if (pd != null) {
 				if (event.getFinalDamage() >= player.getHealth()) {

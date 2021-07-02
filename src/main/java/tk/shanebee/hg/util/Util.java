@@ -270,7 +270,7 @@ public class Util {
             if (count == 1) bc = new StringBuilder(s);
             else if (count == win.size()) {
                 assert bc != null;
-                bc.append(", and ").append(s);
+                bc.append(" un ").append(s);
             } else {
                 assert bc != null;
                 bc.append(", ").append(s);

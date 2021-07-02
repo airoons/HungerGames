@@ -31,6 +31,7 @@ players-to-start: '&b&l<amount> &6players to start!'
 arena-not-ready: '&cThis arena is not ready! Please wait before joining!'
 arena-spectate: '&6You can spectate this arena by running &3/hg spectate <arena>'
 game-full: '&cis currently full!'
+game-over: '&eGame over!'
 
 #  <arena> will be replaced with name of arena the player won in
 #  <winner> will be replaced with name of winner
