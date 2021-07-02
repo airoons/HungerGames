@@ -24,16 +24,11 @@ public class StartingTask implements Runnable {
     public StartingTask(Game game) {
         HG plugin = HG.getPlugin();
         GameArenaData arenaData = game.getGameArenaData();
-        this.timer = arenaData.getCountDownTime();
+        this.timer = arenaData.getCountDownTime() + 1;
         this.game = game;
         this.lang = plugin.getLang();
         String name = arenaData.getName();
-        String broadcast = lang.game_started
-                .replace("<arena>", name)
-                .replace("<seconds>", "" + timer);
         if (Config.broadcastJoinMessages) {
-            Util.broadcast(broadcast);
-
             String joinGame = lang.game_join.replace("<arena>", name);
 
             List<UUID> allPlayers = new ArrayList<>();
@@ -43,11 +38,9 @@ public class StartingTask implements Runnable {
                 if (!allPlayers.contains(player.getUniqueId()))
                     Util.sendPrefixedMessage(player, joinGame);
             }
-        } else {
-            this.game.getGamePlayerData().msgAll(broadcast);
         }
         game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 1f);
-        this.id = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this, 5 * 20L, 20L);
+        this.id = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this, 0, 20L);
     }
 
     @Override
@@ -61,6 +54,13 @@ public class StartingTask implements Runnable {
         } else if (timer % 10 == 0 || timer <= 5) {
             game.getGamePlayerData().msgAll(lang.game_countdown.replace("<timer>", "" + timer));
             game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 1f);
+        }
+
+        for (UUID uuid : game.getGamePlayerData().getPlayersAndSpectators()) {
+            Player player = Bukkit.getPlayer(uuid);
+            if (player != null) {
+                player.setLevel(timer);
+            }
         }
     }
 

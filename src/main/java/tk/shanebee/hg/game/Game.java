@@ -59,6 +59,7 @@ public class Game {
     final GameItemData gameItemData;
     final GameCommandData gameCommandData;
     final GameBorderData gameBorderData;
+    final GamePointData gamePointData;
 
     public boolean gracePeriod;
 
@@ -128,6 +129,7 @@ public class Game {
         this.gameBorderData = new GameBorderData(this);
         this.gameBorderData.setBorderSize(Config.borderFinalSize);
         this.gameBorderData.setBorderTimer(Config.borderCountdownStart, Config.borderCountdownEnd);
+        this.gamePointData = new GamePointData(this);
     }
 
     /**
@@ -191,6 +193,15 @@ public class Game {
      */
     public GameBorderData getGameBorderData() {
         return gameBorderData;
+    }
+
+    /**
+     * Get an instance of GamePointData
+     *
+     * @return Instance of GamePointData
+     */
+    public GamePointData getGamePointData() {
+        return gamePointData;
     }
 
     public StartingTask getStartingTask() {
@@ -273,6 +284,25 @@ public class Game {
         if (Config.borderEnabled && Config.borderOnStart) {
             gameBorderData.setBorder(gameArenaData.timer);
         }
+
+        for (UUID uuid : gamePlayerData.getPlayersAndSpectators()) {
+            Player player = Bukkit.getPlayer(uuid);
+            if (player != null) {
+                player.setLevel(0);
+                gameArenaData.board.fullUpdate(player);
+            }
+        }
+
+        for (Team team : plugin.getTeamManager().getTeams()) {
+            if (team == null) continue;
+            for (UUID uuid : team.getPlayers()) {
+                Player player = Bukkit.getPlayer(uuid);
+                if (player != null) {
+                    Util.log("Team #" + team.getId() + ": " + player.getName());
+                }
+            }
+        }
+
         timer = new TimerTask(this, gameArenaData.timer);
     }
 
@@ -311,21 +341,19 @@ public class Game {
         String winner = Util.translateStop(Util.convertUUIDListToStringList(win));
 
         // Broadcast wins
-        if (death) {
-            String broadcast = lang.player_won.replace("<arena>", gameArenaData.name).replace("<winner>", winner);
-            if (Config.broadcastWinMessages) {
-                Util.broadcast(broadcast);
+        String broadcast = lang.player_won.replace("<arena>", gameArenaData.name).replace("<winner>", winner);
+        if (Config.broadcastWinMessages) {
+            Util.broadcast(broadcast);
 
-                String title = Util.getColString(lang.game_over);
-                String subtitle = Util.getColString(broadcast);
-                for (Player player : Bukkit.getOnlinePlayers()) {
-                    player.sendTitle(title, subtitle, 5, 100, 5);
-                }
-            } else {
-                gamePlayerData.msgAllPlayers(broadcast);
+            String title = Util.getColString(lang.game_over);
+            String subtitle = Util.getColString(broadcast);
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                player.sendTitle(title, subtitle, 5, 100, 5);
             }
-            gamePlayerData.soundAll(Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f);
+        } else {
+            gamePlayerData.msgAllPlayers(broadcast);
         }
+        gamePlayerData.soundAll(Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f);
 
         cancelTasks();
 
@@ -430,7 +458,7 @@ public class Game {
             if (isGameOver()) {
                 if (!death) {
                     for (UUID uuid : gamePlayerData.players) {
-                        if (gamePlayerData.kills.get(Bukkit.getPlayer(uuid)) >= 1) {
+                        if (gamePlayerData.kills.get(uuid) >= 1) {
                             death = true;
                         }
                     }

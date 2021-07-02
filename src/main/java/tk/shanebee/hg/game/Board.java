@@ -10,11 +10,13 @@ import org.bukkit.scoreboard.Team;
 import org.bukkit.scoreboard.Team.Option;
 import org.bukkit.scoreboard.Team.OptionStatus;
 import tk.shanebee.hg.HG;
+import tk.shanebee.hg.Status;
 import tk.shanebee.hg.data.Config;
 import tk.shanebee.hg.managers.PlayerManager;
 import tk.shanebee.hg.util.Util;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -96,25 +98,54 @@ public class Board {
     private void registerBoard(Player player) {
         BPlayerBoard board = Netherboard.instance().createBoard(player, Util.getColString(plugin.getLang().scoreboard_title));
 
-        board.set(Util.getColString(plugin.getLang().scoreboard_line_1), 10);
-        board.set(Util.getColString(plugin.getLang().scoreboard_line_2), 9);
-        board.set(Util.getColString(plugin.getLang().scoreboard_line_3), 8);
-        // alive
-        board.set(Util.getColString(plugin.getLang().scoreboard_line_4 + game.getGameArenaData().aliveCount), 7);
-        // remaining time
-        board.set(Util.getColString(plugin.getLang().scoreboard_line_5 + game.getGameArenaData().timeLeft), 6);
-        board.set(Util.getColString(plugin.getLang().scoreboard_line_6), 5);
-
-        if (!playerManager.hasSpectatorData(player)) {
-            board.set(Util.getColString(plugin.getLang().scoreboard_line_7), 4);
-            // kills
-            board.set(Util.getColString(plugin.getLang().scoreboard_line_8 + game.gamePlayerData.kills.get(player.getUniqueId())), 3);
-            // chests looted
-            board.set(Util.getColString(plugin.getLang().scoreboard_line_9 + game.gamePlayerData.chestsLooted.get(player.getUniqueId())), 2);
-            board.set(Util.getColString(plugin.getLang().scoreboard_line_10), 1);
-        }
+        fullUpdate(board, player);
 
         boards.put(player.getUniqueId(), board);
+    }
+
+    public void fullUpdate(Player player) {
+        BPlayerBoard board = boards.get(player.getUniqueId());
+        if (board == null)
+            return;
+
+        fullUpdate(board, player);
+    }
+
+    public void fullUpdate(BPlayerBoard board, Player player) {
+        int i = 12;
+        if (game.getGameArenaData().getStatus() != Status.RUNNING)
+            i -= 6;
+        if (playerManager.hasSpectatorData(player))
+            i -= 4;
+
+        board.set(Util.getColString(plugin.getLang().scoreboard_line_empty), i--);
+
+        // alive
+        board.set(Util.getColString(plugin.getLang().scoreboard_line_1 + game.getGameArenaData().aliveCount), i--);
+        // remaining time
+        board.set(Util.getColString(plugin.getLang().scoreboard_line_2 + game.getGameArenaData().timeLeft), i--);
+        board.set(Util.getColString(plugin.getLang().scoreboard_line_empty + " "), i--);
+
+        if (game.getGameArenaData().getStatus() == Status.RUNNING) {
+            board.set(Util.getColString(plugin.getLang().scoreboard_line_top), i--);
+
+            for (int place = 1; place <= 4; place++) {
+                board.set(Util.getColString(plugin.getLang().scoreboard_line_top_places
+                        .replace("<place>", String.valueOf(place))
+                        .replace("<teamname>", "???")
+                        .replace("<points>", String.valueOf(0))), i--);
+            }
+
+            board.set(Util.getColString(plugin.getLang().scoreboard_line_empty + "  "), i--);
+        }
+
+        if (!playerManager.hasSpectatorData(player)) {
+            // kills
+            board.set(Util.getColString(plugin.getLang().scoreboard_line_self_1 + game.gamePlayerData.kills.get(player.getUniqueId())), i--);
+            // chests looted
+            board.set(Util.getColString(plugin.getLang().scoreboard_line_self_2 + game.gamePlayerData.chestsLooted.get(player.getUniqueId())), i--);
+            board.set(Util.getColString(plugin.getLang().scoreboard_line_empty + "    "), i);
+        }
     }
 
     @Override
@@ -128,18 +159,32 @@ public class Board {
             if (player == null || !player.isOnline())
                 continue;
 
+            int i = 11;
+            if (game.getGameArenaData().getStatus() != Status.RUNNING)
+                i -= 6;
+            if (playerManager.hasSpectatorData(player))
+                i -= 4;
+
             // alive
-            entry.getValue().set(Util.getColString(plugin.getLang().scoreboard_line_4 + game.getGameArenaData().aliveCount), 7);
+            entry.getValue().set(Util.getColString(plugin.getLang().scoreboard_line_1 + game.getGameArenaData().aliveCount), i--);
             // remaining time
-            entry.getValue().set(Util.getColString(plugin.getLang().scoreboard_line_5 + game.getGameArenaData().timeLeft), 6);
+            entry.getValue().set(Util.getColString(plugin.getLang().scoreboard_line_2 + game.getGameArenaData().timeLeft), i);
+
+            if (game.getGameArenaData().getStatus() != Status.RUNNING)
+                continue;
+
+            i -= 3;
+            for (String placeEntry : game.gamePointData.getTopPlaces(player)) {
+                entry.getValue().set(placeEntry, i--);
+            }
 
             if (playerManager.hasSpectatorData(player))
                 continue;
 
             // kills
-            entry.getValue().set(Util.getColString(plugin.getLang().scoreboard_line_8 + game.gamePlayerData.kills.get(player.getUniqueId())), 3);
+            entry.getValue().set(Util.getColString(plugin.getLang().scoreboard_line_self_1 + game.gamePlayerData.kills.get(player.getUniqueId())), 2);
             // chests looted
-            entry.getValue().set(Util.getColString(plugin.getLang().scoreboard_line_9 + game.gamePlayerData.chestsLooted.get(player.getUniqueId())), 2);
+            entry.getValue().set(Util.getColString(plugin.getLang().scoreboard_line_self_2 + game.gamePlayerData.chestsLooted.get(player.getUniqueId())), 1);
         }
     }
 }

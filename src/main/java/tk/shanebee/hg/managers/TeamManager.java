@@ -4,10 +4,7 @@ import tk.shanebee.hg.data.Config;
 import tk.shanebee.hg.data.TeamData;
 import tk.shanebee.hg.game.Team;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class TeamManager {
 
@@ -50,7 +47,7 @@ public class TeamManager {
         return teams.size();
     }
 
-    public ArrayList<Team> getTeams() {
-        return (ArrayList<Team>) teams.values();
+    public Collection<Team> getTeams() {
+        return teams.values();
     }
 }
