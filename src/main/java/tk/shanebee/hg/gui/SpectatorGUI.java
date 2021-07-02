@@ -35,7 +35,7 @@ public class SpectatorGUI implements InventoryProvider {
                 .manager(invManager)
                 .provider(new SpectatorGUI(game))
                 .size(Math.min(size, 6), 9)
-                .title(HG.getPlugin().getLang().team_gui_title)
+                .title(Util.getColString(HG.getPlugin().getLang().team_gui_title))
                 .build();
     }
 

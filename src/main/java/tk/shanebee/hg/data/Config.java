@@ -1,6 +1,7 @@
 package tk.shanebee.hg.data;
 
 import org.bukkit.configuration.Configuration;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import tk.shanebee.hg.HG;
@@ -89,6 +90,9 @@ public class Config {
     //chest placement
     public static int globalChestChance;
 
+    //Command tab completions
+    public static ConfigurationSection availableCommands;
+
     private final HG plugin;
     private File configFile;
     private FileConfiguration config;
@@ -176,6 +180,8 @@ public class Config {
 
         // chest chance
         globalChestChance = config.getInt("chestspawning.globalchance");
+
+        availableCommands = config.getConfigurationSection("available-commands");
 
         try {
             Vault.setupEconomy();

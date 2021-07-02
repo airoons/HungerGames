@@ -100,8 +100,10 @@ public class Team {
             }
         }
 
-        if (disableGlow)
+        if (disableGlow) {
+            Util.resetTabSort(player);
             eGlowAPI.disableGlow(player);
+        }
     }
 
     /**

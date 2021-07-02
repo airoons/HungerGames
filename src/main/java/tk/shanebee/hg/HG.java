@@ -21,10 +21,7 @@ import tk.shanebee.hg.data.MobConfig;
 import tk.shanebee.hg.data.PlayerSession;
 import tk.shanebee.hg.data.RandomItems;
 import tk.shanebee.hg.game.Game;
-import tk.shanebee.hg.listeners.CancelListener;
-import tk.shanebee.hg.listeners.GameListener;
-import tk.shanebee.hg.listeners.McmmoListeners;
-import tk.shanebee.hg.listeners.WandListener;
+import tk.shanebee.hg.listeners.*;
 import tk.shanebee.hg.managers.*;
 import tk.shanebee.hg.metrics.Metrics;
 import tk.shanebee.hg.metrics.MetricsHandler;
@@ -161,6 +158,7 @@ public class HG extends JavaPlugin {
 		pluginManager.registerEvents(new WandListener(this), this);
 		pluginManager.registerEvents(new CancelListener(this), this);
 		pluginManager.registerEvents(new GameListener(this), this);
+		pluginManager.registerEvents(new CommandSendListener(), this);
 
 		if (this.getDescription().getVersion().contains("Beta")) {
 			Util.log("&eYOU ARE RUNNING A BETA VERSION, please use with caution");

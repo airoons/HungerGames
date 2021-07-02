@@ -234,3 +234,6 @@ kits:
             - POTION potion-base:STRONG_TURTLE_MASTER
         potion-effects:
             - FIRE_RESISTANCE:2:forever
+available-commands:
+    default:
+        - hg

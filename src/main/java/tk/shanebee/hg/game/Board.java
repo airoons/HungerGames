@@ -11,10 +11,10 @@ import org.bukkit.scoreboard.Team.Option;
 import org.bukkit.scoreboard.Team.OptionStatus;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.data.Config;
+import tk.shanebee.hg.managers.PlayerManager;
 import tk.shanebee.hg.util.Util;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -36,11 +36,13 @@ public class Board {
     private final Team team;
     private final String[] entries = new String[]{"&1&r", "&2&r", "&3&r", "&4&r", "&5&r", "&6&r", "&7&r", "&8&r", "&9&r", "&0&r", "&a&r", "&b&r", "&c&r", "&d&r", "&e&r"};
     private Map<UUID, BPlayerBoard> boards = new HashMap<>();
+    private final PlayerManager playerManager;
 
     @SuppressWarnings("ConstantConditions")
     public Board(Game game) {
         this.game = game;
         this.plugin = game.plugin;
+        this.playerManager = plugin.getPlayerManager();
         scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 
         for (int i = 0; i < 15; i++) {
@@ -102,12 +104,15 @@ public class Board {
         // remaining time
         board.set(Util.getColString(plugin.getLang().scoreboard_line_5 + game.getGameArenaData().timeLeft), 6);
         board.set(Util.getColString(plugin.getLang().scoreboard_line_6), 5);
-        board.set(Util.getColString(plugin.getLang().scoreboard_line_7), 4);
-        // kills
-        board.set(Util.getColString(plugin.getLang().scoreboard_line_8 + game.gamePlayerData.kills.get(player.getUniqueId())), 3);
-        // chests looted
-        board.set(Util.getColString(plugin.getLang().scoreboard_line_9 + game.gamePlayerData.chestsLooted.get(player.getUniqueId())), 2);
-        board.set(Util.getColString(plugin.getLang().scoreboard_line_10), 1);
+
+        if (!playerManager.hasSpectatorData(player)) {
+            board.set(Util.getColString(plugin.getLang().scoreboard_line_7), 4);
+            // kills
+            board.set(Util.getColString(plugin.getLang().scoreboard_line_8 + game.gamePlayerData.kills.get(player.getUniqueId())), 3);
+            // chests looted
+            board.set(Util.getColString(plugin.getLang().scoreboard_line_9 + game.gamePlayerData.chestsLooted.get(player.getUniqueId())), 2);
+            board.set(Util.getColString(plugin.getLang().scoreboard_line_10), 1);
+        }
 
         boards.put(player.getUniqueId(), board);
     }
@@ -127,6 +132,10 @@ public class Board {
             entry.getValue().set(Util.getColString(plugin.getLang().scoreboard_line_4 + game.getGameArenaData().aliveCount), 7);
             // remaining time
             entry.getValue().set(Util.getColString(plugin.getLang().scoreboard_line_5 + game.getGameArenaData().timeLeft), 6);
+
+            if (playerManager.hasSpectatorData(player))
+                continue;
+
             // kills
             entry.getValue().set(Util.getColString(plugin.getLang().scoreboard_line_8 + game.gamePlayerData.kills.get(player.getUniqueId())), 3);
             // chests looted
