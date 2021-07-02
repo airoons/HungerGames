@@ -5,7 +5,7 @@ description: A Simple, fun, PvP arena plugin
 version: '${project.version}'
 website: https://bitbucket.org/ShaneBeeStudios/hungergames
 api-version: '1.13'
-depend: [FastAsyncWorldEdit]
+depend: [FastAsyncWorldEdit, LuckPerms, eGlow]
 softdepend: [Multiverse-Core, MultiWorld, Vault, My_Worlds, GoldenEnchants, mcMMO, MythicMobs, PlaceholderAPI, XConomy]
 
 commands:

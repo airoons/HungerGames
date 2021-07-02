@@ -146,6 +146,12 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/depend/eGlow 3.0.9 1.9.4-1.17.jar</systemPath>
         </dependency>
+        <dependency>
+            <groupId>net.luckperms</groupId>
+            <artifactId>api</artifactId>
+            <version>5.2</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <profiles>

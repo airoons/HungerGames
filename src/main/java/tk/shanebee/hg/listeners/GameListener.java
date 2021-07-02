@@ -2,6 +2,8 @@ package tk.shanebee.hg.listeners;
 
 import me.MrGraycat.eGlow.API.EGlowAPI;
 import me.MrGraycat.eGlow.EGlow;
+import net.luckperms.api.model.user.User;
+import net.luckperms.api.node.Node;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;

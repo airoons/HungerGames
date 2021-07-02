@@ -1,6 +1,8 @@
 package tk.shanebee.hg.util;
 
 import me.MrGraycat.eGlow.API.Enum.EGlowColor;
+import net.luckperms.api.model.user.User;
+import net.luckperms.api.node.Node;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -38,7 +40,7 @@ public class Util {
     private static final Logger LOGGER = Bukkit.getLogger();
     public static final BlockFace[] faces = new BlockFace[]{BlockFace.EAST, BlockFace.WEST, BlockFace.NORTH, BlockFace.SOUTH};
     private static final Pattern HEX_PATTERN = Pattern.compile("<#([A-Fa-f0-9]){6}>");
-    public static final Map<EGlowColor, ChatColor> mappedColors = Stream.of(new Object[][] {
+    private static final Map<EGlowColor, ChatColor> mappedColors = Stream.of(new Object[][] {
             {EGlowColor.RED, ChatColor.RED},
             {EGlowColor.GOLD, ChatColor.GOLD},
             {EGlowColor.YELLOW, ChatColor.YELLOW},
@@ -49,6 +51,7 @@ public class Util {
             {EGlowColor.PURPLE, ChatColor.DARK_PURPLE},
             {EGlowColor.PINK, ChatColor.LIGHT_PURPLE}
     }).collect(Collectors.toMap(data -> (EGlowColor) data[0], data -> (ChatColor) data[1]));
+    private static final List<Node> teamSortNodes = new ArrayList<>();
 
     /**
      * Log a message to console prefixed with the plugin's name
@@ -388,5 +391,19 @@ public class Util {
 
     public static ChatColor getChatColorFromGlow(EGlowColor glowColor) {
         return mappedColors.getOrDefault(glowColor, ChatColor.WHITE);
+    }
+
+    public static void resetTabSort(Player player) {
+        User user = HG.getPlugin().getLuckPerms().getPlayerAdapter(Player.class).getUser(player);
+        for (Node node : teamSortNodes) {
+            user.data().remove(node);
+        }
+        HG.getPlugin().getLuckPerms().getUserManager().saveUser(user);
+    }
+
+    public static void initTeamValues() {
+        for (int i = 1; i <= Config.total_team_count; i++) {
+            teamSortNodes.add(Node.builder("tab.sort." + i).build());
+        }
     }
 }

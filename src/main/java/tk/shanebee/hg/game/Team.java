@@ -3,6 +3,8 @@ package tk.shanebee.hg.game;
 import me.MrGraycat.eGlow.API.EGlowAPI;
 import me.MrGraycat.eGlow.API.Enum.EGlowColor;
 import me.MrGraycat.eGlow.EGlow;
+import net.luckperms.api.model.user.User;
+import net.luckperms.api.node.Node;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -22,7 +24,6 @@ public class Team {
     private final String id;
     private final List<UUID> players = new ArrayList<>();
     private final EGlowColor glowColor;
-//    private final org.bukkit.scoreboard.Team bukkitTeam;
 
     public Team(Player leader, String id, EGlowColor glowColor) {
         HG plugin = HG.getPlugin();
@@ -36,9 +37,10 @@ public class Team {
         eGlowAPI.enableGlow(leader, glowColor);
         eGlowAPI.addCustomGlowReceiver(leader, leader);
 
-        // Board/McTeam stuff
-//        bukkitTeam = game.gameArenaData.getBoard().registerTeam(id+);
-//        bukkitTeam.addEntry(leader.getName());
+        Util.resetTabSort(leader);
+        User user = plugin.getLuckPerms().getPlayerAdapter(Player.class).getUser(leader);
+        user.data().add(Node.builder("tab.sort." + id).build());
+        plugin.getLuckPerms().getUserManager().saveUser(user);
     }
 
     /**
@@ -49,9 +51,9 @@ public class Team {
     public void join(Player player) {
         TeamData td = HG.getPlugin().getTeamManager().getTeamData(player.getUniqueId());
         td.setTeam(this);
+        messageMembers(HG.getPlugin().getLang().team_member_joined.replace("<player>", player.getName()));
         players.add(player.getUniqueId());
         Util.scm(player, HG.getPlugin().getLang().joined_team);
-//        bukkitTeam.addEntry(player.getName());
 
         EGlowAPI eGlowAPI = EGlow.getAPI();
 
@@ -67,6 +69,11 @@ public class Team {
 
         eGlowAPI.setCustomGlowReceivers(player, teamOnline);
         eGlowAPI.enableGlow(player, glowColor);
+
+        Util.resetTabSort(player);
+        User user = HG.getPlugin().getLuckPerms().getPlayerAdapter(Player.class).getUser(player);
+        user.data().add(Node.builder("tab.sort." + id).build());
+        HG.getPlugin().getLuckPerms().getUserManager().saveUser(user);
     }
 
     /**
@@ -78,6 +85,7 @@ public class Team {
         TeamData td = HG.getPlugin().getTeamManager().getTeamData(player.getUniqueId());
         td.setTeam(null);
         players.remove(player.getUniqueId());
+        messageMembers(HG.getPlugin().getLang().team_member_left.replace("<player>", player.getName()));
         Util.scm(player, HG.getPlugin().getLang().left_team);
 
         EGlowAPI eGlowAPI = EGlow.getAPI();

@@ -4,11 +4,13 @@ import libs.fr.minuskube.inv.InventoryManager;
 import io.lumine.xikage.mythicmobs.MythicMobs;
 import io.lumine.xikage.mythicmobs.mobs.MobManager;
 import io.papermc.lib.PaperLib;
+import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import tk.shanebee.hg.commands.CommandHandler;
 import tk.shanebee.hg.data.ArenaConfig;
@@ -71,6 +73,9 @@ public class HG extends JavaPlugin {
 	//NMS Nbt
 	private NBTApi nbtApi;
 
+	//LuckPerms
+	private LuckPerms luckPermsAPI;
+
 	@Override
 	public void onEnable() {
         if (!Util.isRunningMinecraft(1, 13)) {
@@ -89,6 +94,10 @@ public class HG extends JavaPlugin {
         playerSession = new HashMap<>();
         items = new HashMap<>();
         bonusItems = new HashMap<>();
+
+		RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
+		if (provider != null)
+			luckPermsAPI = provider.getProvider();
 
 		config = new Config(this);
 		metrics = new Metrics(this);
@@ -123,6 +132,8 @@ public class HG extends JavaPlugin {
 		killManager = new KillManager();
 		manager = new Manager(this);
 		leaderboard = new Leaderboard(this);
+
+		Util.initTeamValues();
 
 		//PAPI check
 		if (pluginManager.getPlugin("PlaceholderAPI") != null) {
@@ -375,4 +386,10 @@ public class HG extends JavaPlugin {
 		return this.mmMobManager;
 	}
 
+	/** Get LuckPerms API
+	 * @return Luck perms api instance
+	 */
+	public LuckPerms getLuckPerms() {
+		return luckPermsAPI;
+	}
 }

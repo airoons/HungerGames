@@ -221,6 +221,8 @@ public class Language {
     public String team_gui_item;
     public String already_in_team;
     public String team_max_size;
+    public String team_member_joined;
+    public String team_member_left;
 
     public Language(HG plugin) {
         this.plugin = plugin;
@@ -486,6 +488,8 @@ public class Language {
         team_gui_item = lang.getString("team-gui-item");
         already_in_team = lang.getString("already-in-team");
         team_max_size = lang.getString("team-max-size");
+        team_member_joined = lang.getString("team-member-joined");
+        team_member_left = lang.getString("team-member-left");
     }
 
 }
