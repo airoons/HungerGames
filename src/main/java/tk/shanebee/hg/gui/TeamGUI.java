@@ -7,10 +7,14 @@ import libs.fr.minuskube.inv.content.InventoryContents;
 import libs.fr.minuskube.inv.content.InventoryProvider;
 import me.MrGraycat.eGlow.API.Enum.EGlowColor;
 import org.bukkit.Bukkit;
+import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.block.banner.Pattern;
+import org.bukkit.block.banner.PatternType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BannerMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.data.Config;
@@ -24,7 +28,7 @@ public class TeamGUI implements InventoryProvider {
     private final HG plugin;
     private final InventoryManager invManager;
     private static Map<Material, EGlowColor> colorMap;
-    private static ArrayList<Material> bannerList;
+    private static Material[] bannerList;
     private Map<Integer, List<UUID>> savedPlayers;
     private SmartInventory inventory;
 
@@ -34,26 +38,33 @@ public class TeamGUI implements InventoryProvider {
 
         if (colorMap == null) {
             colorMap = new HashMap<>();
-            colorMap.put(Material.RED_BANNER, EGlowColor.RED);
-            colorMap.put(Material.ORANGE_BANNER, EGlowColor.GOLD);
-            colorMap.put(Material.YELLOW_BANNER, EGlowColor.YELLOW);
+
             colorMap.put(Material.LIME_BANNER, EGlowColor.GREEN);
             colorMap.put(Material.GREEN_BANNER, EGlowColor.DARK_GREEN);
-            colorMap.put(Material.LIGHT_BLUE_BANNER, EGlowColor.AQUA);
-            colorMap.put(Material.BLUE_BANNER, EGlowColor.BLUE);
-            colorMap.put(Material.PURPLE_BANNER, EGlowColor.PURPLE);
+            colorMap.put(Material.YELLOW_BANNER, EGlowColor.YELLOW);
+            colorMap.put(Material.ORANGE_BANNER, EGlowColor.GOLD);
+            colorMap.put(Material.WHITE_BANNER, EGlowColor.WHITE);
+            colorMap.put(Material.GRAY_BANNER, EGlowColor.DARK_GRAY);
             colorMap.put(Material.PINK_BANNER, EGlowColor.PINK);
+            colorMap.put(Material.PURPLE_BANNER, EGlowColor.PURPLE);
+            colorMap.put(Material.RED_BANNER, EGlowColor.RED);
+            colorMap.put(Material.LIGHT_BLUE_BANNER, EGlowColor.AQUA);
+            colorMap.put(Material.BLUE_BANNER, EGlowColor.DARK_BLUE);
+            colorMap.put(Material.CYAN_BANNER, EGlowColor.DARK_AQUA);
 
-            ArrayList<Material> allBanners = new ArrayList<>(colorMap.keySet());
-            bannerList = new ArrayList<>();
-            Random rand = new Random();
-
-            for (int i = 0; i < Config.total_team_count; i++) {
-                if (allBanners.isEmpty())
-                    allBanners.addAll(colorMap.keySet());
-
-                bannerList.add(allBanners.remove(rand.nextInt(allBanners.size())));
-            }
+            bannerList = new Material[12];
+            bannerList[0] = Material.LIME_BANNER;
+            bannerList[1] = Material.GREEN_BANNER;
+            bannerList[2] = Material.YELLOW_BANNER;
+            bannerList[3] = Material.ORANGE_BANNER;
+            bannerList[4] = Material.WHITE_BANNER;
+            bannerList[5] = Material.GRAY_BANNER;
+            bannerList[6] = Material.PINK_BANNER;
+            bannerList[7] = Material.PURPLE_BANNER;
+            bannerList[8] = Material.RED_BANNER;
+            bannerList[9] = Material.LIGHT_BLUE_BANNER;
+            bannerList[10] = Material.BLUE_BANNER;
+            bannerList[11] = Material.CYAN_BANNER;
         }
     }
 
@@ -75,12 +86,16 @@ public class TeamGUI implements InventoryProvider {
     public void init(Player player, InventoryContents contents) {
         ItemMeta itemMeta;
         savedPlayers = new HashMap<>();
-        String itemNameStart = plugin.getLang().team_gui_item;
 
         for (int i = 0; i < Config.total_team_count; i++) {
-            ItemStack item = new ItemStack(bannerList.get(i));
+            if (i >= bannerList.length)
+                break;
+
+            ItemStack item = new ItemStack(bannerList[i]);
             itemMeta = item.getItemMeta();
-            itemMeta.setDisplayName(Util.getColString(itemNameStart + (i + 1)));
+            EGlowColor glowColor = colorMap.get(item.getType());
+            itemMeta.setDisplayName(Util.getColString(Util.getChatColorFromGlow(glowColor) + plugin.getLang().team_colors.get(glowColor) + "&7 komanda"));
+
 
             List<String> lore = new ArrayList<>();
             List<String> list = plugin.getLang().team_select_lore;
@@ -113,11 +128,10 @@ public class TeamGUI implements InventoryProvider {
         for (int i = 0; i < Config.total_team_count; i++) {
             Team team = plugin.getTeamManager().getTeam(String.valueOf(i + 1));
             if (team != null && !savedPlayers.get(i).equals(team.getPlayers())) {
-                String itemNameStart = plugin.getLang().team_gui_item;
-                ItemStack item = new ItemStack(bannerList.get(i));
-                ItemMeta itemMeta;
-                itemMeta = item.getItemMeta();
-                itemMeta.setDisplayName(Util.getColString(itemNameStart + (i + 1)));
+                ItemStack item = new ItemStack(bannerList[i]);
+                ItemMeta itemMeta = item.getItemMeta();
+                EGlowColor glowColor = colorMap.get(item.getType());
+                itemMeta.setDisplayName(Util.getColString(Util.getChatColorFromGlow(glowColor) + plugin.getLang().team_colors.get(glowColor) + "&7 komanda"));
 
                 List<String> lore = new ArrayList<>();
                 List<String> list = plugin.getLang().team_select_lore;
@@ -161,10 +175,9 @@ public class TeamGUI implements InventoryProvider {
         }
 
         if (team == null) {
-            team = new Team(player, String.valueOf(slot + 1), colorMap.get(material));
+            team = new Team(String.valueOf(slot + 1), colorMap.get(material));
+            team.join(player);
             plugin.getTeamManager().addTeam(team);
-
-            Util.scm(player, HG.getPlugin().getLang().joined_team);
 
             player.closeInventory();
             return;

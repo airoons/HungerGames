@@ -2,18 +2,40 @@ package tk.shanebee.hg.game;
 
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.entity.Player;
+import tk.shanebee.hg.data.Config;
+import tk.shanebee.hg.util.Util;
 
 import java.util.*;
 
 /**
- * Data class for holding a {@link Game Game's} blocks
+ * Data class for holding a {@link Game Game's} team points
  */
 public class GamePointData extends Data {
 
-    private Map<Team, Integer> points = new HashMap<>();
+    public Map<Team, Integer> points = new HashMap<>();
 
     protected GamePointData(Game game) {
         super(game);
+        for (Team team : game.plugin.getTeamManager().getTeams()) {
+            points.put(team, 0);
+        }
+    }
+
+    public void addSurvivingPoints(Player player) {
+        Team playerTeam = plugin.getTeamManager().getTeamData(player.getUniqueId()).getTeam();
+
+        for (Team team : plugin.getTeamManager().getTeams()) {
+            if (team != playerTeam)
+                addPoints(team, Config.pointsPerSurviving);
+        }
+    }
+
+    public void addGamePoints(Player player, int toAdd) {
+        Team team = plugin.getTeamManager().getTeamData(player.getUniqueId()).getTeam();
+        if (team == null)
+            return;
+
+        addPoints(team, toAdd);
     }
 
     public void addPoints(Team team, int toAdd) {
@@ -24,48 +46,61 @@ public class GamePointData extends Data {
         points = sortByValue(points);
     }
 
-    public Set<String> getTopPlaces(Player player) {
-        Set<String> result = new HashSet<>();
+    public ArrayList<String> getTopPlaces(Player player) {
+        ArrayList<String> result = new ArrayList<>();
 
-        int i = 0;
+        Team playerTeam = plugin.getTeamManager().getTeamData(player.getUniqueId()).getTeam();
+        int playerPos = getPlace(playerTeam);
+
+        int i = 1;
+        int added = 0;
+
         for (Map.Entry<Team, Integer> entry : points.entrySet()) {
-            result.add(ChatColor.translateAlternateColorCodes('&', plugin.getLang().scoreboard_line_top_places
-                .replace("<place>", String.valueOf(i + 1))
-                .replace("<teamname>", entry.getKey().getChatColor() + "Komanda #" + entry.getKey().getId())
-                .replace("<points>", String.valueOf(entry.getValue()))
-            ));
+            //1 1st
+            //2 oth
+            //3 me
+            //4 oth
+            if (i == 1 || (playerPos == i) ||
+                (playerPos < 12 && (playerPos < i || playerPos - 1 == i)) ||
+                (playerPos == 12 && i > 9)) {
+                result.add(getTeamPointsFormatted(entry.getKey(), i, entry.getValue(), entry.getKey() == playerTeam));
+                added++;
+            }
 
             i++;
-
-            if (i == 3)
+            if (added == 4)
                 break;
         }
 
-        if (i < 3) {
-            if (i == 0) i = 1;
+        return result;
+    }
 
-            while (i != 3) {
-                result.add(ChatColor.translateAlternateColorCodes('&', plugin.getLang().scoreboard_line_top_places
-                        .replace("<place>", String.valueOf(i))
-                        .replace("<teamname>", "???")
-                        .replace("<points>", "0")
-                ));
-                i++;
-            }
+    public int getPlace(Team team) {
+        int i = 1;
+        for (Map.Entry<Team, Integer> entry : points.entrySet()) {
+            if (entry.getKey() == team)
+                return i;
+            i++;
         }
 
-        result.add(ChatColor.translateAlternateColorCodes('&', plugin.getLang().scoreboard_line_top_places
-                .replace("<place>", "10")
-                .replace("<teamname>", "Tava komanda")
-                .replace("<points>", "0")
-        ));
+        return -1;
+    }
 
-        return result;
+    private String getTeamPointsFormatted(Team team, int place, int points, boolean isPlayerTeam) {
+        if (team == null)
+            return "";
+
+        return ChatColor.translateAlternateColorCodes('&', plugin.getLang().scoreboard_line_top_places
+                .replace("<place>", String.valueOf(place))
+                .replace("<teamname>", team.getChatColor() + (isPlayerTeam ? "&l" : "") + lang.team_colors.get(team.getGlowColor()))
+                .replace("<points>", String.valueOf(points))
+        );
     }
 
     public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
         List<Map.Entry<K, V>> list = new ArrayList<>(map.entrySet());
         list.sort(Map.Entry.comparingByValue());
+        Collections.reverse(list);
 
         Map<K, V> result = new LinkedHashMap<>();
         for (Map.Entry<K, V> entry : list) {

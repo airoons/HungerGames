@@ -122,6 +122,7 @@ public class ChestDrop implements Listener {
             event.setCancelled(true);
             player.playSound(player.getLocation(), Sound.BLOCK_ENDER_CHEST_OPEN, 1, 1);
             player.openInventory(i);
+            game.getGamePointData().addGamePoints(player, Config.pointsPerChestDrop);
         }
     }
 

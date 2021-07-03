@@ -52,7 +52,7 @@ public class Placeholders extends PlaceholderExpansion {
         if (identifier.equalsIgnoreCase("team_prefix")) {
             TeamData td = plugin.getTeamManager().getTeamData(player.getUniqueId());
             if (td.getTeam() != null) {
-                return "&f#" + td.getTeam().getId() + " " + td.getTeam().getChatColor();
+                return td.getTeam().getChatColor() + "&l" + plugin.getLang().team_colors.get(td.getTeam().getGlowColor()) + "&f ";
             }
             return "";
         }

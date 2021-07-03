@@ -16,7 +16,6 @@ import tk.shanebee.hg.managers.PlayerManager;
 import tk.shanebee.hg.util.Util;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -39,6 +38,7 @@ public class Board {
     private final String[] entries = new String[]{"&1&r", "&2&r", "&3&r", "&4&r", "&5&r", "&6&r", "&7&r", "&8&r", "&9&r", "&0&r", "&a&r", "&b&r", "&c&r", "&d&r", "&e&r"};
     private Map<UUID, BPlayerBoard> boards = new HashMap<>();
     private final PlayerManager playerManager;
+    private int boardTickCounter = 0;
 
     @SuppressWarnings("ConstantConditions")
     public Board(Game game) {
@@ -112,7 +112,7 @@ public class Board {
     }
 
     public void fullUpdate(BPlayerBoard board, Player player) {
-        int i = 12;
+        int i = 13;
         if (game.getGameArenaData().getStatus() != Status.RUNNING)
             i -= 6;
         if (playerManager.hasSpectatorData(player))
@@ -129,21 +129,18 @@ public class Board {
         if (game.getGameArenaData().getStatus() == Status.RUNNING) {
             board.set(Util.getColString(plugin.getLang().scoreboard_line_top), i--);
 
-            for (int place = 1; place <= 4; place++) {
-                board.set(Util.getColString(plugin.getLang().scoreboard_line_top_places
-                        .replace("<place>", String.valueOf(place))
-                        .replace("<teamname>", "???")
-                        .replace("<points>", String.valueOf(0))), i--);
+            for (String placeEntry : game.gamePointData.getTopPlaces(player)) {
+                board.set(placeEntry, i--);
             }
 
             board.set(Util.getColString(plugin.getLang().scoreboard_line_empty + "  "), i--);
         }
 
-        if (!playerManager.hasSpectatorData(player)) {
+        if (!playerManager.hasSpectatorData(player) && playerManager.hasPlayerData(player)) {
             // kills
-            board.set(Util.getColString(plugin.getLang().scoreboard_line_self_1 + game.gamePlayerData.kills.get(player.getUniqueId())), i--);
+            board.set(Util.getColString(plugin.getLang().scoreboard_line_self_1 + game.gamePlayerData.kills.getOrDefault(player.getUniqueId(), 0)), i--);
             // chests looted
-            board.set(Util.getColString(plugin.getLang().scoreboard_line_self_2 + game.gamePlayerData.chestsLooted.get(player.getUniqueId())), i--);
+            board.set(Util.getColString(plugin.getLang().scoreboard_line_self_2 + game.gamePlayerData.chestsLooted.getOrDefault(player.getUniqueId(), 0)), i--);
             board.set(Util.getColString(plugin.getLang().scoreboard_line_empty + "    "), i);
         }
     }
@@ -154,12 +151,14 @@ public class Board {
     }
 
     public void updateBoard() {
+        boardTickCounter++;
+
         for (Map.Entry<UUID, BPlayerBoard> entry : boards.entrySet()) {
             Player player = Bukkit.getPlayer(entry.getKey());
             if (player == null || !player.isOnline())
                 continue;
 
-            int i = 11;
+            int i = 12;
             if (game.getGameArenaData().getStatus() != Status.RUNNING)
                 i -= 6;
             if (playerManager.hasSpectatorData(player))
@@ -173,18 +172,23 @@ public class Board {
             if (game.getGameArenaData().getStatus() != Status.RUNNING)
                 continue;
 
-            i -= 3;
-            for (String placeEntry : game.gamePointData.getTopPlaces(player)) {
-                entry.getValue().set(placeEntry, i--);
+            if (boardTickCounter == 6) {
+                i -= 3;
+                for (String placeEntry : game.gamePointData.getTopPlaces(player)) {
+                    entry.getValue().set(placeEntry, i--);
+                }
             }
 
             if (playerManager.hasSpectatorData(player))
                 continue;
 
             // kills
-            entry.getValue().set(Util.getColString(plugin.getLang().scoreboard_line_self_1 + game.gamePlayerData.kills.get(player.getUniqueId())), 2);
+            entry.getValue().set(Util.getColString(plugin.getLang().scoreboard_line_self_1 + game.gamePlayerData.kills.getOrDefault(player.getUniqueId(), 0)), 3);
             // chests looted
-            entry.getValue().set(Util.getColString(plugin.getLang().scoreboard_line_self_2 + game.gamePlayerData.chestsLooted.get(player.getUniqueId())), 1);
+            entry.getValue().set(Util.getColString(plugin.getLang().scoreboard_line_self_2 + game.gamePlayerData.chestsLooted.getOrDefault(player.getUniqueId(), 0)), 2);
         }
+
+        if (boardTickCounter >= 6)
+            boardTickCounter = 0;
     }
 }

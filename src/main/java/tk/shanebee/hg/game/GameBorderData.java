@@ -4,6 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
 import tk.shanebee.hg.data.Config;
+import tk.shanebee.hg.util.Util;
 
 import java.util.Arrays;
 import java.util.List;
@@ -80,7 +81,7 @@ public class GameBorderData extends Data {
     void resetBorder() {
         World world = game.gameArenaData.getBound().getWorld();
         assert world != null;
-        world.getWorldBorder().reset();
+        world.getWorldBorder().setSize(1000000);
     }
 
 }

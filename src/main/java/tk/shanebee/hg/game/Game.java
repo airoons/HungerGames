@@ -62,6 +62,7 @@ public class Game {
     final GamePointData gamePointData;
 
     public boolean gracePeriod;
+    private boolean gameEnded;
 
     /**
      * Create a new game
@@ -130,6 +131,7 @@ public class Game {
         this.gameBorderData.setBorderSize(Config.borderFinalSize);
         this.gameBorderData.setBorderTimer(Config.borderCountdownStart, Config.borderCountdownEnd);
         this.gamePointData = new GamePointData(this);
+        this.gameEnded = false;
     }
 
     /**
@@ -327,6 +329,10 @@ public class Game {
      * @param death Whether the game stopped after the result of a death (false = no winnings payed out)
      */
     public void stop(Boolean death) {
+        if (gameEnded)
+            return;
+        gameEnded = true;
+
         List<UUID> win = new ArrayList<>();
         for (UUID uuid : gamePlayerData.players) {
             Player player = Bukkit.getPlayer(uuid);
@@ -445,6 +451,7 @@ public class Game {
             Bukkit.getPluginManager().callEvent(new GameEndEvent(this, winners, death));
 
             gameArenaData.timeLeft = "00:00";
+            gameEnded = false;
 
             for (Player oPlayer : Bukkit.getOnlinePlayers())
                 for (Player otPlayer : Bukkit.getOnlinePlayers())

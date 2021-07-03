@@ -1,5 +1,6 @@
 package tk.shanebee.hg.listeners;
 
+import io.papermc.lib.PaperLib;
 import me.MrGraycat.eGlow.API.EGlowAPI;
 import me.MrGraycat.eGlow.EGlow;
 import net.luckperms.api.model.user.User;
@@ -222,6 +223,7 @@ public class GameListener implements Listener {
 			if (damager instanceof Player) {
 				gamePlayerData.addKill(((Player) damager));
 				leaderboard.addStat(((Player) damager), Leaderboard.Stats.KILLS);
+				game.getGamePointData().addGamePoints((Player) damager, Config.pointsPerKill);
 				deathString = killManager.getKillString(player.getName(), damager);
 			} else if (cause == DamageCause.ENTITY_ATTACK) {
 				deathString = killManager.getKillString(player.getName(), damager);
@@ -230,10 +232,13 @@ public class GameListener implements Listener {
 				if (killManager.isShotByPlayer(damager) && killManager.getShooter(damager) != player) {
 					gamePlayerData.addKill(killManager.getShooter(damager));
                     leaderboard.addStat(killManager.getShooter(damager), Leaderboard.Stats.KILLS);
+					game.getGamePointData().addGamePoints(killManager.getShooter(damager), Config.pointsPerKill);
                 }
 			} else {
 				deathString = killManager.getDeathString(cause, player.getName());
 			}
+
+			game.getGamePointData().addSurvivingPoints(player);
 
 			// Send death message to all players in game
 			gamePlayerData.msgAll(lang.death_fallen + " &d" + deathString);
@@ -241,13 +246,6 @@ public class GameListener implements Listener {
 
 			leaderboard.addStat(player, Leaderboard.Stats.DEATHS);
 			leaderboard.addStat(player, Leaderboard.Stats.GAMES);
-
-			for (UUID uuid : game.getGamePlayerData().getPlayers()) {
-				Player alive = Bukkit.getPlayer(uuid);
-//				if (alive != null && player != alive) {
-//					alive.playSound(alive.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 5, 1);
-//				}
-			}
 
 			gamePlayerData.leave(player, true);
 			game.getGameCommandData().runCommands(CommandType.DEATH, player);
@@ -734,6 +732,9 @@ public class GameListener implements Listener {
 			if (playerManager.hasPlayerData(oPlayer) || playerManager.hasSpectatorData(oPlayer))
 				oPlayer.hidePlayer(plugin, player);
 		}
+
+		Location worldSpawn = Bukkit.getWorlds().get(0).getSpawnLocation();
+		PaperLib.teleportAsync(player, worldSpawn);
 
 		event.setJoinMessage(Util.getColString("&a+ &7" + event.getPlayer().getName()));
 	}

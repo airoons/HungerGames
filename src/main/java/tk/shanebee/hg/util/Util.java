@@ -42,14 +42,17 @@ public class Util {
     private static final Pattern HEX_PATTERN = Pattern.compile("<#([A-Fa-f0-9]){6}>");
     private static final Map<EGlowColor, ChatColor> mappedColors = Stream.of(new Object[][] {
             {EGlowColor.RED, ChatColor.RED},
+            {EGlowColor.DARK_AQUA, ChatColor.DARK_AQUA},
             {EGlowColor.GOLD, ChatColor.GOLD},
             {EGlowColor.YELLOW, ChatColor.YELLOW},
             {EGlowColor.GREEN, ChatColor.GREEN},
             {EGlowColor.DARK_GREEN, ChatColor.DARK_GREEN},
             {EGlowColor.AQUA, ChatColor.AQUA},
-            {EGlowColor.BLUE, ChatColor.BLUE},
+            {EGlowColor.DARK_BLUE, ChatColor.BLUE},
             {EGlowColor.PURPLE, ChatColor.DARK_PURPLE},
-            {EGlowColor.PINK, ChatColor.LIGHT_PURPLE}
+            {EGlowColor.PINK, ChatColor.LIGHT_PURPLE},
+            {EGlowColor.WHITE, ChatColor.WHITE},
+            {EGlowColor.DARK_GRAY, ChatColor.GRAY}
     }).collect(Collectors.toMap(data -> (EGlowColor) data[0], data -> (ChatColor) data[1]));
     private static final List<Node> teamSortNodes = new ArrayList<>();
 

@@ -25,22 +25,9 @@ public class Team {
     private final List<UUID> players = new ArrayList<>();
     private final EGlowColor glowColor;
 
-    public Team(Player leader, String id, EGlowColor glowColor) {
-        HG plugin = HG.getPlugin();
+    public Team(String id, EGlowColor glowColor) {
         this.id = id;
-        TeamData td = plugin.getTeamManager().getTeamData(leader.getUniqueId());
-        players.add(leader.getUniqueId());
-        td.setTeam(this);
-
-        EGlowAPI eGlowAPI = EGlow.getAPI();
         this.glowColor = glowColor;
-        eGlowAPI.enableGlow(leader, glowColor);
-        eGlowAPI.addCustomGlowReceiver(leader, leader);
-
-        Util.resetTabSort(leader);
-        User user = plugin.getLuckPerms().getPlayerAdapter(Player.class).getUser(leader);
-        user.data().add(Node.builder("tab.sort." + id).build());
-        plugin.getLuckPerms().getUserManager().saveUser(user);
     }
 
     /**
@@ -51,7 +38,8 @@ public class Team {
     public void join(Player player) {
         TeamData td = HG.getPlugin().getTeamManager().getTeamData(player.getUniqueId());
         td.setTeam(this);
-        messageMembers(HG.getPlugin().getLang().team_member_joined.replace("<player>", player.getName()));
+        if (players.size() > 0)
+            messageMembers(HG.getPlugin().getLang().team_member_joined.replace("<player>", player.getName()));
         players.add(player.getUniqueId());
         Util.scm(player, HG.getPlugin().getLang().joined_team);
 
@@ -155,5 +143,9 @@ public class Team {
 
     public ChatColor getChatColor() {
         return Util.getChatColorFromGlow(glowColor);
+    }
+
+    public EGlowColor getGlowColor() {
+        return glowColor;
     }
 }

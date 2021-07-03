@@ -1,8 +1,14 @@
 package tk.shanebee.hg.tasks;
 
 import org.bukkit.*;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Chicken;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.Status;
 import tk.shanebee.hg.data.Config;
@@ -35,9 +41,12 @@ public class ChestDropTask implements Runnable {
         int z = i[2];
         World w = bound.getWorld();
 
-        while (w.getBlockAt(x, y, z).getType() == Material.AIR) {
+        Block block = w.getBlockAt(x, y, z);
+
+        while (!block.isSolid()) {
             y--;
 
+            block = w.getBlockAt(x, y, z);
             if (y <= 0) {
                 i = bound.getRandomLocs();
 
@@ -48,7 +57,7 @@ public class ChestDropTask implements Runnable {
         }
 
         y = y + 10;
-        Location l = new Location(w, x, y, z);
+        Location l = w.getBlockAt(x, y, z).getLocation();
         String chestLoc = HG.getPlugin().getLang().chest_drop_4
                 .replace("<x>", String.valueOf(x))
                 .replace("<y>", String.valueOf(y))
@@ -81,6 +90,15 @@ public class ChestDropTask implements Runnable {
                 }
             }
             FallingBlock fb = w.spawnFallingBlock(l, Bukkit.getServer().createBlockData(Material.STRIPPED_SPRUCE_WOOD));
+//            Chicken chicken = (Chicken) w.spawnEntity(l, EntityType.CHICKEN);
+//            chicken.addPassenger(fb);
+//            chicken.setAI(false);
+//            chicken.setInvisible(true);
+//            chicken.setInvulnerable(true);
+//            chicken.setSilent(true);
+//            chicken.setPersistent(true);
+//            chicken.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, 99999, 1, true, false));
+            fb.setDropItem(false);
             chests.add(new ChestDrop(fb));
             game.getGamePlayerData().soundAll(Sound.ENTITY_BAT_TAKEOFF, 1f, 1f);
         }, 600);

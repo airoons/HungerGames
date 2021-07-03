@@ -164,6 +164,11 @@ mcmmo:
 chestspawning:
     globalchance: 50
 
+points:
+    per-kill: 50
+    chest-drop: 150
+    surviving: 5
+
 ## KITS
 # Create new ones, rename the current ones, delete them, go nuts
 # See KITS section in wiki for more info (https://github.com/ShaneBeeStudios/HungerGames/wiki/Config.yml#kits)

@@ -39,7 +39,7 @@ public class StartingTask implements Runnable {
                     Util.sendPrefixedMessage(player, joinGame);
             }
         }
-        game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 1f);
+//        game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 1f);
         this.id = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this, 0, 20L);
     }
 

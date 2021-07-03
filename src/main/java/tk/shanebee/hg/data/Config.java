@@ -93,6 +93,11 @@ public class Config {
     //Command tab completions
     public static ConfigurationSection availableCommands;
 
+    //For points
+    public static int pointsPerKill;
+    public static int pointsPerChestDrop;
+    public static int pointsPerSurviving;
+
     private final HG plugin;
     private File configFile;
     private FileConfiguration config;
@@ -182,6 +187,10 @@ public class Config {
         globalChestChance = config.getInt("chestspawning.globalchance");
 
         availableCommands = config.getConfigurationSection("available-commands");
+
+        pointsPerKill = config.getInt("points.per-kill");
+        pointsPerChestDrop = config.getInt("points.chest-drop");
+        pointsPerSurviving = config.getInt("points.surviving");
 
         try {
             Vault.setupEconomy();

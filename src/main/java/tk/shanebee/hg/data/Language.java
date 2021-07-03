@@ -1,5 +1,6 @@
 package tk.shanebee.hg.data;
 
+import me.MrGraycat.eGlow.API.Enum.EGlowColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import tk.shanebee.hg.HG;
@@ -8,7 +9,7 @@ import tk.shanebee.hg.util.Util;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.List;
+import java.util.*;
 
 /**
  * Language handler for plugin messages
@@ -221,6 +222,8 @@ public class Language {
     public String team_max_size;
     public String team_member_joined;
     public String team_member_left;
+
+    public Map<EGlowColor, String> team_colors = new HashMap<>();
 
     public Language(HG plugin) {
         this.plugin = plugin;
@@ -486,6 +489,11 @@ public class Language {
         team_max_size = lang.getString("team-max-size");
         team_member_joined = lang.getString("team-member-joined");
         team_member_left = lang.getString("team-member-left");
+
+        List<EGlowColor> colors = new ArrayList<>(Arrays.asList(EGlowColor.GREEN, EGlowColor.DARK_GREEN, EGlowColor.YELLOW, EGlowColor.GOLD, EGlowColor.WHITE, EGlowColor.DARK_GRAY, EGlowColor.PINK, EGlowColor.PURPLE, EGlowColor.RED, EGlowColor.AQUA, EGlowColor.DARK_BLUE, EGlowColor.DARK_AQUA));
+        for (EGlowColor color : colors) {
+            team_colors.put(color, lang.getString("team-color-" + color.name()));
+        }
     }
 
 }
