@@ -10,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.data.TeamData;
+import tk.shanebee.hg.managers.PlayerManager;
 import tk.shanebee.hg.util.Util;
 
 import java.util.ArrayList;
@@ -147,5 +148,18 @@ public class Team {
 
     public EGlowColor getGlowColor() {
         return glowColor;
+    }
+
+    public boolean isAlive() {
+        PlayerManager pm = HG.getPlugin().getPlayerManager();
+
+        for (UUID uuid : this.players) {
+            Player player = Bukkit.getPlayer(uuid);
+            if (player != null && pm.hasPlayerData(player)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

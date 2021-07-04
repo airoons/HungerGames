@@ -32,6 +32,7 @@ public class Language {
     public String game_ending_sec;
     public String game_border_closing;
     public String game_chest_refill;
+    public String game_chest_refill_in;
     public String players_to_start;
     public String arena_not_ready;
     public String arena_spectate;
@@ -222,6 +223,7 @@ public class Language {
     public String team_max_size;
     public String team_member_joined;
     public String team_member_left;
+    public String team_cannot_started;
 
     public Map<EGlowColor, String> team_colors = new HashMap<>();
 
@@ -429,6 +431,7 @@ public class Language {
         bossbar = lang.getString("game-bossbar");
 
         game_chest_refill = lang.getString("game-chests-refill");
+        game_chest_refill_in = lang.getString("game-chests-refill-in");
         cmd_chest_refill = lang.getString("cmd-chestrefill-set");
         cmd_chest_refill_now = lang.getString("cmd-chestrefill-now");
         cmd_border_center = lang.getString("cmd-border-center");
@@ -489,6 +492,7 @@ public class Language {
         team_max_size = lang.getString("team-max-size");
         team_member_joined = lang.getString("team-member-joined");
         team_member_left = lang.getString("team-member-left");
+        team_cannot_started = lang.getString("team-cannot-started");
 
         List<EGlowColor> colors = new ArrayList<>(Arrays.asList(EGlowColor.GREEN, EGlowColor.DARK_GREEN, EGlowColor.YELLOW, EGlowColor.GOLD, EGlowColor.WHITE, EGlowColor.DARK_GRAY, EGlowColor.PINK, EGlowColor.PURPLE, EGlowColor.RED, EGlowColor.AQUA, EGlowColor.DARK_BLUE, EGlowColor.DARK_AQUA));
         for (EGlowColor color : colors) {

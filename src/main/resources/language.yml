@@ -22,6 +22,7 @@ game-ending-min: '&aThe game is ending in <minutes> minute(s)!'
 game-ending-sec: '&athe game is ending in <seconds> second(s)!'
 game-border-closing: '&6The border is coming, you have <seconds> seconds to get to the center of the arena!'
 game-chests-refill: '&6Chests have been refilled'
+game-chests-refill-in: '&6Chests will be refilled in <seconds> seconds!'
 
 # <min>/<sec> will be replaced with the remaining minutes and seconds in a game
 game-bossbar: '&6&lGame Ends In: &b&l<min> &7min &b&l<sec> &7sec'
@@ -295,11 +296,12 @@ team-select-lore:
   - ''
   - '&7Team members:'
 must-have-team: "&cYou must have a team to join!"
-team-gui-item: "&fTeam #"
+team-gui-item: "&7 team"
 already-in-team: "&cYou already are in this team!"
 team-max-size: "&cTeam has reached max size!"
 team-member-joined: "&f<player> &7joined your team!"
 team-member-left: "&f<player> &7left your team!"
+team-cannot-started: "&cGame has already started!"
 
 #Team names
 team-color-GREEN: "Green"

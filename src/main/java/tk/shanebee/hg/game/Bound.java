@@ -59,7 +59,9 @@ public class Bound {
 
 	public Integer[] getRandomLocs() {
 		Random r = new Random();
-		int border = (int) getWorld().getWorldBorder().getSize() / 2;
+		int border = (int) getWorld().getWorldBorder().getSize() / 2 - 30;
+		if (border <= 0)
+			border = 40;
 
 		int cx = (Math.abs(x) < border) ? x : (border - 1) * (x < 0 ? - 1 : 1);
 		int cz = (Math.abs(z) < border) ? z : (border - 1) * (z < 0 ? - 1 : 1);

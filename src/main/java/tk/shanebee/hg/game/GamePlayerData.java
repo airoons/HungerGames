@@ -59,8 +59,6 @@ public class GamePlayerData extends Data {
         this.spectatorGUI = new SpectatorGUI(game);
     }
 
-    // TODO Data methods
-
     /**
      * Get a list of all players in the game
      *
@@ -296,8 +294,6 @@ public class GamePlayerData extends Data {
         this.chestsLooted.put(player.getUniqueId(), this.chestsLooted.getOrDefault(player.getUniqueId(), 0) + 1);
     }
 
-    // TODO Game methods
-
     /**
      * Join a player to the game
      *
@@ -328,7 +324,6 @@ public class GamePlayerData extends Data {
                 return;
             }
             if (plugin.getTeamManager().getTeamData(player.getUniqueId()).getTeam() == null) {
-                TeamCmd.openGUI(player);
                 Util.scm(player, lang.must_have_team);
                 return;
             }
@@ -356,7 +351,8 @@ public class GamePlayerData extends Data {
             Location previousLocation = player.getLocation();
 
             for (Player oPlayer : Bukkit.getOnlinePlayers()) {
-                oPlayer.showPlayer(plugin, player);
+                if (playerManager.hasPlayerData(oPlayer))
+                    oPlayer.showPlayer(plugin, player);
             }
 
             // Teleport async into the arena so it loads a little more smoothly
@@ -494,11 +490,13 @@ public class GamePlayerData extends Data {
                 Player player = Bukkit.getPlayer(u);
                 if (player == null) continue;
                 player.hidePlayer(plugin, spectator);
+                spectator.showPlayer(plugin, player);
             }
             for (UUID u : spectators) {
                 Player player = Bukkit.getPlayer(u);
                 if (player == null) continue;
                 player.hidePlayer(plugin, spectator);
+                spectator.hidePlayer(plugin, player);
             }
         }
         game.getGameBarData().addPlayer(spectator);

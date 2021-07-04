@@ -25,7 +25,7 @@ public class GamePointData extends Data {
         Team playerTeam = plugin.getTeamManager().getTeamData(player.getUniqueId()).getTeam();
 
         for (Team team : plugin.getTeamManager().getTeams()) {
-            if (team != playerTeam)
+            if (team != playerTeam && team.isAlive())
                 addPoints(team, Config.pointsPerSurviving);
         }
     }
@@ -46,6 +46,16 @@ public class GamePointData extends Data {
         points = sortByValue(points);
     }
 
+    public Team getWinnerTeam() {
+        points = sortByValue(points);
+
+        for (Map.Entry<Team, Integer> entry : points.entrySet()) {
+            return entry.getKey();
+        }
+
+        return null;
+    }
+
     public ArrayList<String> getTopPlaces(Player player) {
         ArrayList<String> result = new ArrayList<>();
 
@@ -56,10 +66,6 @@ public class GamePointData extends Data {
         int added = 0;
 
         for (Map.Entry<Team, Integer> entry : points.entrySet()) {
-            //1 1st
-            //2 oth
-            //3 me
-            //4 oth
             if (i == 1 || (playerPos == i) ||
                 (playerPos < 12 && (playerPos < i || playerPos - 1 == i)) ||
                 (playerPos == 12 && i > 9)) {
@@ -109,4 +115,10 @@ public class GamePointData extends Data {
 
         return result;
     }
+
+    public void resetAll() {
+        for (Team team : game.plugin.getTeamManager().getTeams()) {
+            points.put(team, 0);
+        }
+    };
 }

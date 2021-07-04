@@ -2,6 +2,7 @@ package tk.shanebee.hg.managers;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.data.Language;
 import tk.shanebee.hg.data.Leaderboard;
@@ -50,11 +51,11 @@ public class Placeholders extends PlaceholderExpansion {
     @Override
     public String onRequest(OfflinePlayer player, String identifier) {
         if (identifier.equalsIgnoreCase("team_prefix")) {
-            TeamData td = plugin.getTeamManager().getTeamData(player.getUniqueId());
-            if (td.getTeam() != null) {
-                return td.getTeam().getChatColor() + "&l" + plugin.getLang().team_colors.get(td.getTeam().getGlowColor()) + "&f ";
-            }
-            return "";
+            if (!player.isOnline())
+                return "";
+            Player onlinePlayer = player.getPlayer();
+
+            return getTeamPrefixFormatted(onlinePlayer);
         }
 
         if (identifier.startsWith("lb_player_")) {
@@ -142,4 +143,16 @@ public class Placeholders extends PlaceholderExpansion {
         }
     }
 
+    public static String getTeamPrefixFormatted(Player player) {
+        TeamData td = HG.getPlugin().getTeamManager().getTeamData(player.getUniqueId());
+
+        String nickColor = (HG.getPlugin().getPlayerManager().hasPlayerData(player)) ? "&f" : "&7";
+        if (player.hasPermission("bedwars.admin.chat"))
+            nickColor = "&c";
+
+        if (td.getTeam() != null)
+            return td.getTeam().getChatColor() + "&l" + HG.getPlugin().getLang().team_colors.get(td.getTeam().getGlowColor()) + nickColor + " ";
+
+        return nickColor;
+    }
 }

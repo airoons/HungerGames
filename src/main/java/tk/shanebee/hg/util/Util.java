@@ -260,7 +260,7 @@ public class Util {
     public static List<String> convertUUIDListToStringList(List<UUID> uuid) {
         List<String> winners = new ArrayList<>();
         for (UUID id : uuid) {
-            winners.add(Objects.requireNonNull(Bukkit.getPlayer(id)).getName());
+            winners.add(Objects.requireNonNull(Bukkit.getOfflinePlayer(id)).getName());
         }
         return winners;
     }

@@ -1,5 +1,7 @@
 package tk.shanebee.hg.data;
 
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -12,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -97,6 +100,8 @@ public class Config {
     public static int pointsPerKill;
     public static int pointsPerChestDrop;
     public static int pointsPerSurviving;
+
+    public static ArrayList<Material> chestDropLandBlocks = new ArrayList<>();
 
     private final HG plugin;
     private File configFile;
@@ -191,6 +196,15 @@ public class Config {
         pointsPerKill = config.getInt("points.per-kill");
         pointsPerChestDrop = config.getInt("points.chest-drop");
         pointsPerSurviving = config.getInt("points.surviving");
+
+        List<String> allowedLanding = config.getStringList("random-chest.allowed-landing");
+        for (String allowedString : allowedLanding) {
+            Material mat = Material.getMaterial(allowedString);
+            if (mat == null) continue;
+
+            if (!chestDropLandBlocks.contains(mat))
+                chestDropLandBlocks.add(mat);
+        }
 
         try {
             Vault.setupEconomy();

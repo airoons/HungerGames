@@ -1,10 +1,7 @@
 package tk.shanebee.hg.listeners;
 
 import io.papermc.lib.PaperLib;
-import me.MrGraycat.eGlow.API.EGlowAPI;
 import me.MrGraycat.eGlow.EGlow;
-import net.luckperms.api.model.user.User;
-import net.luckperms.api.node.Node;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -46,6 +43,7 @@ import tk.shanebee.hg.game.GameCommandData.CommandType;
 import tk.shanebee.hg.gui.SpectatorGUI;
 import tk.shanebee.hg.managers.KillManager;
 import tk.shanebee.hg.managers.Manager;
+import tk.shanebee.hg.managers.Placeholders;
 import tk.shanebee.hg.managers.PlayerManager;
 import tk.shanebee.hg.util.BlockUtils;
 import tk.shanebee.hg.util.Util;
@@ -417,9 +415,9 @@ public class GameListener implements Listener {
             if (status != Status.RUNNING && status != Status.BEGINNING) {
                 event.setCancelled(true);
                 Block block = event.getClickedBlock();
-                if (block != null && block.getType() != Material.AIR) {
-                    Util.scm(player, lang.listener_no_interact);
-                }
+//                if (block != null && block.getType() != Material.AIR) {
+//                    Util.scm(player, lang.listener_no_interact);
+//                }
             }
         } else if (action == Action.RIGHT_CLICK_BLOCK) {
 			Block block = event.getClickedBlock();
@@ -727,14 +725,28 @@ public class GameListener implements Listener {
 	@EventHandler
 	private void onJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
+		boolean gameRunning = false;
+
+		for (Game game : plugin.getGames()) {
+			if (game.getGameArenaData().getStatus() == Status.RUNNING) {
+				gameRunning = true;
+				break;
+			}
+		}
 
 		for (Player oPlayer : Bukkit.getOnlinePlayers()) {
-			if (playerManager.hasPlayerData(oPlayer) || playerManager.hasSpectatorData(oPlayer))
+			if (gameRunning && (playerManager.hasPlayerData(oPlayer) || playerManager.hasSpectatorData(oPlayer)))
 				oPlayer.hidePlayer(plugin, player);
 		}
 
 		Location worldSpawn = Bukkit.getWorlds().get(0).getSpawnLocation();
-		PaperLib.teleportAsync(player, worldSpawn);
+		player.getInventory().clear();
+		player.setLevel(0);
+		player.setExp(0f);
+		PaperLib.teleportAsync(player, worldSpawn).thenAccept(a -> {
+			EGlow.getAPI().disableGlow(player);
+			EGlow.getAPI().resetCustomGlowReceivers(player);
+		});
 
 		event.setJoinMessage(Util.getColString("&a+ &7" + event.getPlayer().getName()));
 	}
@@ -775,13 +787,25 @@ public class GameListener implements Listener {
 
 	@EventHandler
 	private void onChat(AsyncPlayerChatEvent event) {
+		boolean isTeam = false;
 		boolean isSpectator = false;
-		if (!Config.spectateChat) {
+		Team team = plugin.getTeamManager().getTeamData(event.getPlayer().getUniqueId()).getTeam();
+
+		if (event.getMessage().startsWith("!") && team != null) {
+			event.setMessage(event.getMessage().substring(1, event.getMessage().length()));
+
+			event.getRecipients().clear();
+			for (UUID uuid : team.getPlayers()) {
+				Player p = Bukkit.getPlayer(uuid);
+				if (p != null)
+					event.getRecipients().add(p);
+			}
+
+			isTeam = true;
+		} else if (!Config.spectateChat) {
 			Player spectator = event.getPlayer();
-			if (playerManager.hasSpectatorData(spectator)) {
-				PlayerData data = playerManager.getSpectatorData(spectator);
-				Game game = data.getGame();
-				for (UUID uuid : game.getGamePlayerData().getPlayers()) {
+			if (playerManager.hasSpectatorData(spectator) && !spectator.hasPermission("bedwars.bypass.spectatechat")) {
+				for (UUID uuid : playerManager.getSpectatorData(spectator).getGame().getGamePlayerData().getPlayers()) {
 					Player player = Bukkit.getPlayer(uuid);
 					event.getRecipients().remove(player);
 				}
@@ -789,7 +813,7 @@ public class GameListener implements Listener {
 			}
 		}
 
-        event.setFormat(Util.getColString((isSpectator ? "&8[&f" + lang.spectators + "&8] &7" : "&7") + event.getPlayer().getName() + " &8» &f%2$s"));
+        event.setFormat(Util.getColString((isTeam ? lang.team_prefix : "") + (isSpectator ? "&8[&f" + lang.spectators + "&8] " : "") + Placeholders.getTeamPrefixFormatted(event.getPlayer()) + event.getPlayer().getName() + " &8» &f%2$s"));
 	}
 
 	@EventHandler

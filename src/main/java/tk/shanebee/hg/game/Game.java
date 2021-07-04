@@ -276,6 +276,7 @@ public class Game {
      * Start the game
      */
     public void startGame() {
+        gamePointData.resetAll();
         gameArenaData.status = Status.RUNNING;
         if (Config.spawnmobs) spawner = new SpawnerTask(this, Config.spawnmobsinterval);
         if (Config.randomChest) chestDrop = new ChestDropTask(this);
@@ -287,10 +288,19 @@ public class Game {
             gameBorderData.setBorder(gameArenaData.timer);
         }
 
+        ArrayList<Player> toHide = new ArrayList<>();
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (!playerManager.hasPlayerData(p))
+                toHide.add(p);
+        }
+
         for (UUID uuid : gamePlayerData.getPlayersAndSpectators()) {
             Player player = Bukkit.getPlayer(uuid);
             if (player != null) {
                 player.setLevel(0);
+                for (Player p : toHide) {
+                    player.hidePlayer(plugin, p);
+                }
                 gameArenaData.board.fullUpdate(player);
             }
         }
@@ -334,12 +344,14 @@ public class Game {
         gameEnded = true;
 
         List<UUID> win = new ArrayList<>();
-        for (UUID uuid : gamePlayerData.players) {
-            Player player = Bukkit.getPlayer(uuid);
-            if (player != null) {
-                PlayerData playerData = playerManager.getPlayerData(uuid);
+        Team winnerTeam = gamePointData.getWinnerTeam();
 
-                gamePlayerData.heal(player);
+        if (winnerTeam != null) {
+            for (UUID uuid : winnerTeam.getPlayers()) {
+                Player player = Bukkit.getPlayer(uuid);
+                if (player != null) {
+                    gamePlayerData.heal(player);
+                }
                 win.add(uuid);
             }
         }

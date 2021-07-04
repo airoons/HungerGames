@@ -92,6 +92,10 @@ random-chest:
     enabled: false
     interval: 30
     max-chestcontent: 9
+    allowed-landing:
+        - GRASS_BLOCK
+        - STONE
+
 rollback:
     # Let players break blocks in the arena, and restore when the game is done
     allow-block-break: false

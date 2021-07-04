@@ -94,7 +94,7 @@ public class TeamGUI implements InventoryProvider {
             ItemStack item = new ItemStack(bannerList[i]);
             itemMeta = item.getItemMeta();
             EGlowColor glowColor = colorMap.get(item.getType());
-            itemMeta.setDisplayName(Util.getColString(Util.getChatColorFromGlow(glowColor) + plugin.getLang().team_colors.get(glowColor) + "&7 komanda"));
+            itemMeta.setDisplayName(Util.getColString(Util.getChatColorFromGlow(glowColor) + plugin.getLang().team_colors.get(glowColor) + plugin.getLang().team_gui_item));
 
 
             List<String> lore = new ArrayList<>();
@@ -131,7 +131,7 @@ public class TeamGUI implements InventoryProvider {
                 ItemStack item = new ItemStack(bannerList[i]);
                 ItemMeta itemMeta = item.getItemMeta();
                 EGlowColor glowColor = colorMap.get(item.getType());
-                itemMeta.setDisplayName(Util.getColString(Util.getChatColorFromGlow(glowColor) + plugin.getLang().team_colors.get(glowColor) + "&7 komanda"));
+                itemMeta.setDisplayName(Util.getColString(Util.getChatColorFromGlow(glowColor) + plugin.getLang().team_colors.get(glowColor) + plugin.getLang().team_gui_item));
 
                 List<String> lore = new ArrayList<>();
                 List<String> list = plugin.getLang().team_select_lore;

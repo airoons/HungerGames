@@ -58,9 +58,18 @@ public class TimerTask implements Runnable {
 			game.getGamePlayerData().msgAll(lang.game_border_closing.replace("<seconds>", String.valueOf(closingIn)));
 		}
 
-		if (gameArenaData.getChestRefillTime() > 0 && remainingtime == gameArenaData.getChestRefillTime()) {
-			game.getGameBlockData().refillChests();
-			game.getGamePlayerData().msgAll(lang.game_chest_refill);
+		if (gameArenaData.getChestRefillTime() > 0) {
+			if (remainingtime == gameArenaData.getChestRefillTime()) {
+				game.getGameBlockData().refillChests();
+				game.getGamePlayerData().msgAll(lang.game_chest_refill);
+					game.getGamePlayerData().soundAll(Sound.BLOCK_FENCE_GATE_OPEN, 1f, 1f);
+			} else {
+				int refillSeconds = remainingtime - gameArenaData.getChestRefillTime();
+				if (refillSeconds == 60 || refillSeconds == 30) {
+					game.getGamePlayerData().msgAll(lang.game_chest_refill_in.replace("<seconds>", String.valueOf(refillSeconds)));
+					game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BIT, 1f, 1f);
+				}
+			}
 		}
 
 //		int refillRepeat = gameArenaData.getChestRefillRepeat();

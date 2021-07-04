@@ -3,15 +3,12 @@ package tk.shanebee.hg.listeners;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.FallingBlock;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
@@ -23,6 +20,7 @@ import tk.shanebee.hg.game.Game;
 import tk.shanebee.hg.managers.PlayerManager;
 import tk.shanebee.hg.util.Util;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 
@@ -31,15 +29,17 @@ import java.util.Random;
  */
 public class ChestDrop implements Listener {
 
-    private FallingBlock fb;
+    private Chicken chicken;
+    private ArrayList<Entity> passengers;
     private BlockState beforeBlock;
     private Player invopener;
     private Chunk c;
     private PlayerManager playerManager;
 
-    public ChestDrop(FallingBlock fb) {
-        this.fb = fb;
-        this.c = fb.getLocation().getChunk();
+    public ChestDrop(Chicken chicken, ArrayList<Entity> passengers) {
+        this.chicken = chicken;
+        this.passengers = passengers;
+        this.c = chicken.getLocation().getChunk();
         c.load();
         Bukkit.getPluginManager().registerEvents(this, HG.getPlugin());
         this.playerManager = HG.getPlugin().getPlayerManager();
@@ -54,7 +54,14 @@ public class ChestDrop implements Listener {
     }
 
     public void remove() {
-        if (fb != null && !fb.isDead()) fb.remove();
+        if (chicken != null && !chicken.isDead())
+            chicken.remove();
+
+        for (Entity passenger : passengers) {
+            if (passenger == null || passenger.isDead()) continue;
+            passenger.remove();
+        }
+
         if (beforeBlock != null) {
             beforeBlock.update(true);
             Block b = beforeBlock.getBlock();
@@ -66,22 +73,27 @@ public class ChestDrop implements Listener {
         HandlerList.unregisterAll(this);
     }
 
-    @EventHandler
-    public void onEntityModifyBlock(EntityChangeBlockEvent event) {
-        Entity en = event.getEntity();
+    public void placeBlock() {
+        if (chicken == null) return;
 
-        if (!(en instanceof FallingBlock)) return;
+        beforeBlock = chicken.getLocation().getBlock().getState();
+        Location l = beforeBlock.getLocation();
+        Util.shootFirework(new Location(l.getWorld(), l.getX() + 0.5, l.getY(), l.getZ() + 0.5));
+        beforeBlock.getBlock().setType(Material.ENDER_CHEST);
 
-        FallingBlock fb2 = (FallingBlock) en;
+        if (chicken != null && !chicken.isDead())
+            chicken.remove();
 
-        if (fb2.equals(fb)) {
-            beforeBlock = event.getBlock().getState();
-
-            Location l = beforeBlock.getLocation();
-            Util.shootFirework(new Location(l.getWorld(), l.getX() + 0.5, l.getY(), l.getZ() + 0.5));
-            event.setCancelled(true);
-            event.getBlock().setType(Material.ENDER_CHEST);
+        for (Entity passenger : passengers) {
+            if (passenger == null || passenger.isDead()) continue;
+            passenger.remove();
         }
+    }
+
+    @EventHandler
+    public void onLeashSpawn(ItemSpawnEvent event) {
+        if (event.getEntity().getItemStack().getType() == Material.LEAD)
+            event.setCancelled(true);
     }
 
     @EventHandler
