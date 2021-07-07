@@ -84,7 +84,7 @@ public class ChestDropTask implements Runnable {
         l.getChunk().load(true);
 
         ArrayList<Entity> passengers = new ArrayList<>();
-        FallingBlock fb = w.spawnFallingBlock(l, Bukkit.getServer().createBlockData(Material.STRIPPED_SPRUCE_WOOD));
+        FallingBlock fb = w.spawnFallingBlock(l, Bukkit.getServer().createBlockData(Material.OBSIDIAN));
         passengers.add(fb);
 
         Chicken chicken = (Chicken) w.spawnEntity(l, EntityType.CHICKEN);
@@ -196,5 +196,9 @@ public class ChestDropTask implements Runnable {
         for (ChestDrop cd : chests) {
             if (cd != null) cd.remove();
         }
+    }
+
+    public List<ChestDrop> getChests() {
+        return chests;
     }
 }

@@ -464,6 +464,7 @@ public class Game {
 
             gameArenaData.timeLeft = "00:00";
             gameEnded = false;
+            gamePointData.resetAll();
 
             for (Player oPlayer : Bukkit.getOnlinePlayers())
                 for (Player otPlayer : Bukkit.getOnlinePlayers())
@@ -546,6 +547,10 @@ public class Game {
 
     public TimerTask getTimer() {
         return timer;
+    }
+
+    public ChestDropTask getChestDrop() {
+        return chestDrop;
     }
 
     @Override

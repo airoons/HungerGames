@@ -26,7 +26,7 @@ public class SpectateCmd extends BaseCmd {
 			if (game != null && !gamePlayerData.getPlayers().contains(player.getUniqueId()) && !gamePlayerData.getSpectators().contains(player.getUniqueId())) {
 				Status status = game.getGameArenaData().getStatus();
 				if (status == Status.RUNNING || status == Status.BEGINNING) {
-					gamePlayerData.spectate(player);
+					gamePlayerData.spectate(player, true);
 				} else {
 					Util.scm(player, "This game is not running, status: " + status);
 				}

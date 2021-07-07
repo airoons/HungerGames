@@ -45,6 +45,7 @@ import tk.shanebee.hg.managers.KillManager;
 import tk.shanebee.hg.managers.Manager;
 import tk.shanebee.hg.managers.Placeholders;
 import tk.shanebee.hg.managers.PlayerManager;
+import tk.shanebee.hg.tasks.ChestDropTask;
 import tk.shanebee.hg.util.BlockUtils;
 import tk.shanebee.hg.util.Util;
 
@@ -601,6 +602,9 @@ public class GameListener implements Listener {
 			Game game = gameManager.getGame(block.getLocation());
 			Status status = game.getGameArenaData().getStatus();
 			if (status == Status.RUNNING || status == Status.BEGINNING && game.getGameBlockData() != null) {
+				for (ChestDrop chestDrop : game.getChestDrop().getChests())
+					if (chestDrop.getBeforeBlock().getLocation().equals(block.getLocation())) return;
+
 				game.getGameBlockData().recordBlockBreak(block);
 			}
 		}
@@ -614,6 +618,9 @@ public class GameListener implements Listener {
 				Game game = gameManager.getGame(event.getEntity().getLocation());
 				Status status = game.getGameArenaData().getStatus();
 				if (status == Status.RUNNING || status == Status.BEGINNING) {
+					for (ChestDrop chestDrop : game.getChestDrop().getChests())
+						if (chestDrop.getBeforeBlock().getLocation().equals(block.getLocation())) return;
+
 					game.getGameBlockData().recordBlockPlace(block.getState());
 				}
 			}

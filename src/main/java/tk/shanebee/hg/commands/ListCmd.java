@@ -11,7 +11,6 @@ public class ListCmd extends BaseCmd {
 		cmdName = "list";
 		forceInGame = true;
 		argLength = 1;
-		permissionDefault = PermissionDefault.TRUE;
 	}
 
 	@Override

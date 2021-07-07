@@ -136,12 +136,12 @@ public class Board {
             board.set(Util.getColString(plugin.getLang().scoreboard_line_empty + "  "), i--);
         }
 
-        if (!playerManager.hasSpectatorData(player) && playerManager.hasPlayerData(player)) {
+        if (game.getGamePlayerData().hadPlayed(player.getUniqueId())) {
             // kills
             board.set(Util.getColString(plugin.getLang().scoreboard_line_self_1 + game.gamePlayerData.kills.getOrDefault(player.getUniqueId(), 0)), i--);
             // chests looted
             board.set(Util.getColString(plugin.getLang().scoreboard_line_self_2 + game.gamePlayerData.chestsLooted.getOrDefault(player.getUniqueId(), 0)), i--);
-            board.set(Util.getColString(plugin.getLang().scoreboard_line_empty + "    "), i);
+            board.set(Util.getColString(plugin.getLang().scoreboard_line_empty + "     "), i);
         }
     }
 

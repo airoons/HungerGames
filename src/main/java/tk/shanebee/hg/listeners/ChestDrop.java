@@ -35,6 +35,7 @@ public class ChestDrop implements Listener {
     private Player invopener;
     private Chunk c;
     private PlayerManager playerManager;
+    private boolean chestOpened = false;
 
     public ChestDrop(Chicken chicken, ArrayList<Entity> passengers) {
         this.chicken = chicken;
@@ -70,6 +71,7 @@ public class ChestDrop implements Listener {
             }
         }
 
+
         HandlerList.unregisterAll(this);
     }
 
@@ -102,7 +104,6 @@ public class ChestDrop implements Listener {
             if (p.equals(invopener)) {
                 Location l = beforeBlock.getLocation();
                 assert l.getWorld() != null;
-                l.getWorld().createExplosion(l.getBlockX(), l.getBlockY(), l.getBlockZ(), 1, false, false);
                 remove();
                 return;
             }
@@ -115,6 +116,13 @@ public class ChestDrop implements Listener {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK && beforeBlock != null && event.getClickedBlock().getLocation().equals(beforeBlock.getLocation())) {
             Player player = event.getPlayer();
             if (!playerManager.hasPlayerData(player.getUniqueId())) return;
+
+            if (chestOpened) {
+                event.setCancelled(true);
+                return;
+            }
+            chestOpened = true;
+
             Game game = playerManager.getPlayerData(player.getUniqueId()).getGame();
             Random rg = new Random();
             invopener = player;
@@ -138,4 +146,7 @@ public class ChestDrop implements Listener {
         }
     }
 
+    public BlockState getBeforeBlock() {
+        return beforeBlock;
+    }
 }

@@ -1,8 +1,6 @@
 package tk.shanebee.hg.commands;
 
-import org.bukkit.permissions.PermissionDefault;
 import tk.shanebee.hg.game.Game;
-import tk.shanebee.hg.HG;
 import tk.shanebee.hg.game.GameArenaData;
 import tk.shanebee.hg.util.Util;
 
@@ -13,7 +11,6 @@ public class ListGamesCmd extends BaseCmd {
 		cmdName = "listgames";
 		forceInGame = false;
 		argLength = 1;
-		permissionDefault = PermissionDefault.TRUE;
 	}
 
 	@Override

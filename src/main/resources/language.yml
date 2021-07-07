@@ -302,6 +302,8 @@ team-max-size: "&cTeam has reached max size!"
 team-member-joined: "&f<player> &7joined your team!"
 team-member-left: "&f<player> &7left your team!"
 team-cannot-started: "&cGame has already started!"
+team-points-header: "&eTop teams:"
+team-points-list: "  &f#<place> <teamname> - &7<points>"
 
 #Team names
 team-color-GREEN: "Green"

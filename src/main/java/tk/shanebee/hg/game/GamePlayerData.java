@@ -417,7 +417,7 @@ public class GamePlayerData extends Data {
         unFreeze(player);
         if (death) {
             if (Config.spectateEnabled && Config.spectateOnDeath) {
-                spectate(player);
+                spectate(player, false);
 //                player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 5, 1);
                 player.sendTitle("", Util.getColString(lang.spectator_start_title), 10, 100, 10);
                 game.updateAfterDeath(player, true);
@@ -470,9 +470,10 @@ public class GamePlayerData extends Data {
      *
      * @param spectator The player to spectate
      */
-    public void spectate(Player spectator) {
+    public void spectate(Player spectator, boolean teleport) {
         UUID uuid = spectator.getUniqueId();
-        spectator.teleport(game.gameArenaData.getSpawns().get(0));
+        if (teleport)
+            spectator.teleport(game.gameArenaData.getSpawns().get(0));
         if (playerManager.hasPlayerData(uuid)) {
             playerManager.transferPlayerDataToSpectator(uuid);
         } else {
@@ -532,6 +533,10 @@ public class GamePlayerData extends Data {
         for (Player player : Bukkit.getOnlinePlayers()) {
             player.showPlayer(plugin, hidden);
         }
+    }
+
+    public boolean hadPlayed(UUID uuid) {
+        return allPlayers.contains(uuid);
     }
 
     // UTIL

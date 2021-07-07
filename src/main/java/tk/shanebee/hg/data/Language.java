@@ -224,6 +224,8 @@ public class Language {
     public String team_member_joined;
     public String team_member_left;
     public String team_cannot_started;
+    public String team_points_header;
+    public String team_points_list;
 
     public Map<EGlowColor, String> team_colors = new HashMap<>();
 
@@ -493,6 +495,8 @@ public class Language {
         team_member_joined = lang.getString("team-member-joined");
         team_member_left = lang.getString("team-member-left");
         team_cannot_started = lang.getString("team-cannot-started");
+        team_points_header = lang.getString("team-points-header");
+        team_points_list = lang.getString("team-points-list");
 
         List<EGlowColor> colors = new ArrayList<>(Arrays.asList(EGlowColor.GREEN, EGlowColor.DARK_GREEN, EGlowColor.YELLOW, EGlowColor.GOLD, EGlowColor.WHITE, EGlowColor.DARK_GRAY, EGlowColor.PINK, EGlowColor.PURPLE, EGlowColor.RED, EGlowColor.AQUA, EGlowColor.DARK_BLUE, EGlowColor.DARK_AQUA));
         for (EGlowColor color : colors) {

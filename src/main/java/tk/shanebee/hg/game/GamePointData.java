@@ -56,6 +56,23 @@ public class GamePointData extends Data {
         return null;
     }
 
+    public ArrayList<String> getAll(Player player) {
+        ArrayList<String> result = new ArrayList<>();
+
+        Team playerTeam = plugin.getTeamManager().getTeamData(player.getUniqueId()).getTeam();
+        int playerPos = getPlace(playerTeam);
+
+        int i = 1;
+        int added = 0;
+
+        for (Map.Entry<Team, Integer> entry : points.entrySet()) {
+            result.add(getTeamPointsFormatted(entry.getKey(), i, entry.getValue(), entry.getKey() == playerTeam));
+            i++;
+        }
+
+        return result;
+    }
+
     public ArrayList<String> getTopPlaces(Player player) {
         ArrayList<String> result = new ArrayList<>();
 
