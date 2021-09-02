@@ -14,8 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Main config class <b>Internal Use Only</b>
@@ -23,6 +22,7 @@ import java.util.List;
 public class Config {
 
     public static boolean debug;
+    public static boolean practiceMode;
 
     //Basic settings
     public static boolean broadcastJoinMessages;
@@ -98,8 +98,8 @@ public class Config {
 
     //For points
     public static int pointsPerKill;
-    public static int pointsPerChestDrop;
-    public static int pointsPerSurviving;
+    public static int pointsPerTeamBonus;
+    public static Map<Integer, Integer> pointsPerPlacement = new HashMap<>();
 
     public static ArrayList<Material> chestDropLandBlocks = new ArrayList<>();
 
@@ -129,6 +129,7 @@ public class Config {
 
     private void loadConfig() {
         debug = config.getBoolean("settings.debug");
+        practiceMode = config.getBoolean("settings.practice-mode");
         broadcastJoinMessages = config.getBoolean("settings.broadcast-join-messages");
         broadcastWinMessages = config.getBoolean("settings.broadcast-win-messages");
         spawnmobs = config.getBoolean("settings.spawn-mobs");
@@ -194,8 +195,12 @@ public class Config {
         availableCommands = config.getConfigurationSection("available-commands");
 
         pointsPerKill = config.getInt("points.per-kill");
-        pointsPerChestDrop = config.getInt("points.chest-drop");
-        pointsPerSurviving = config.getInt("points.surviving");
+        pointsPerTeamBonus = config.getInt("points.per-team-bonus");
+
+        List<Integer> placementPoints = config.getIntegerList("points.placement");
+        for (int i = 1; i <= Config.total_team_count; i++) {
+            pointsPerPlacement.put(i, (placementPoints.size() > i ? placementPoints.get(i - 1) : 0));
+        }
 
         List<String> allowedLanding = config.getStringList("random-chest.allowed-landing");
         for (String allowedString : allowedLanding) {

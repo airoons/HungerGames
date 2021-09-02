@@ -9,6 +9,7 @@ import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tk.shanebee.hg.HG;
+import tk.shanebee.hg.data.Config;
 import tk.shanebee.hg.data.TeamData;
 import tk.shanebee.hg.managers.PlayerManager;
 import tk.shanebee.hg.util.Util;
@@ -32,6 +33,27 @@ public class Team {
     }
 
     /**
+     * Resets team
+     */
+    public void reset() {
+        EGlowAPI eGlowAPI = EGlow.getAPI();
+
+        for (UUID uuid : players) {
+            TeamData td = HG.getPlugin().getTeamManager().getTeamData(uuid);
+            td.setTeam(null);
+
+            Player p = Bukkit.getPlayer(uuid);
+            if (p != null) {
+                eGlowAPI.resetCustomGlowReceivers(p);
+                eGlowAPI.disableGlow(p);
+                Util.resetTabSort(p);
+            }
+        }
+
+        players.clear();
+    }
+
+    /**
      * Add a player to this team
      *
      * @param player Player to add
@@ -39,10 +61,12 @@ public class Team {
     public void join(Player player) {
         TeamData td = HG.getPlugin().getTeamManager().getTeamData(player.getUniqueId());
         td.setTeam(this);
-        if (players.size() > 0)
-            messageMembers(HG.getPlugin().getLang().team_member_joined.replace("<player>", player.getName()));
+        if (Config.practiceMode) {
+            if (players.size() > 0)
+                messageMembers(HG.getPlugin().getLang().team_member_joined.replace("<player>", player.getName()));
+            Util.scm(player, HG.getPlugin().getLang().joined_team);
+        }
         players.add(player.getUniqueId());
-        Util.scm(player, HG.getPlugin().getLang().joined_team);
 
         EGlowAPI eGlowAPI = EGlow.getAPI();
 
@@ -70,12 +94,16 @@ public class Team {
      *
      * @param player Player to remove
      */
-    public void leave(Player player, boolean disableGlow) {
+    public void leave(Player player, boolean disableGlow, boolean keepInMemory) {
         TeamData td = HG.getPlugin().getTeamManager().getTeamData(player.getUniqueId());
-        td.setTeam(null);
-        players.remove(player.getUniqueId());
-        messageMembers(HG.getPlugin().getLang().team_member_left.replace("<player>", player.getName()));
-        Util.scm(player, HG.getPlugin().getLang().left_team);
+        if (!keepInMemory) {
+            td.setTeam(null);
+            players.remove(player.getUniqueId());
+            if (Config.practiceMode) {
+                messageMembers(HG.getPlugin().getLang().team_member_left.replace("<player>", player.getName()));
+                Util.scm(player, HG.getPlugin().getLang().left_team);
+            }
+        }
 
         EGlowAPI eGlowAPI = EGlow.getAPI();
 
@@ -148,6 +176,10 @@ public class Team {
 
     public EGlowColor getGlowColor() {
         return glowColor;
+    }
+
+    public String getName() {
+        return HG.getPlugin().getLang().team_colors.get(glowColor);
     }
 
     public boolean isAlive() {

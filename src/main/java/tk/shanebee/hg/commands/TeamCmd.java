@@ -3,6 +3,7 @@ package tk.shanebee.hg.commands;
 import org.bukkit.entity.Player;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.Status;
+import tk.shanebee.hg.data.Config;
 import tk.shanebee.hg.game.Game;
 import tk.shanebee.hg.gui.TeamGUI;
 import tk.shanebee.hg.util.Util;
@@ -23,7 +24,8 @@ public class TeamCmd extends BaseCmd {
 
     @Override
     public boolean run() {
-        openGUI(player);
+        if (Config.practiceMode)
+            openGUI(player);
         return true;
     }
 

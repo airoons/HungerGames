@@ -338,6 +338,9 @@ public class GamePlayerData extends Data {
                 player.leaveVehicle();
             }
 
+            if (players.size() == 0)
+                game.getGamePointData().resetAll();
+
             UUID uuid = player.getUniqueId();
             players.add(uuid);
             allPlayers.add(uuid);

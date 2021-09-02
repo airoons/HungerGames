@@ -8,6 +8,7 @@ import org.bukkit.block.data.Directional;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import tk.shanebee.hg.HG;
+import tk.shanebee.hg.PointType;
 import tk.shanebee.hg.Status;
 import tk.shanebee.hg.data.Config;
 import tk.shanebee.hg.data.Language;
@@ -343,6 +344,14 @@ public class Game {
             return;
         gameEnded = true;
 
+        for (Team aTeam : plugin.getTeamManager().getTeams()) {
+            if (aTeam.isAlive()) {
+                gamePointData.setPlacement(Config.pointsPerPlacement.get(1));
+                gamePointData.addGamePoints(aTeam, PointType.PLACEMENT);
+                break;
+            }
+        }
+
         List<UUID> win = new ArrayList<>();
         Team winnerTeam = gamePointData.getWinnerTeam();
 
@@ -355,6 +364,8 @@ public class Game {
                 win.add(uuid);
             }
         }
+
+        gamePointData.printDebugLog();
 
         String winner = Util.translateStop(Util.convertUUIDListToStringList(win));
 
@@ -464,11 +475,12 @@ public class Game {
 
             gameArenaData.timeLeft = "00:00";
             gameEnded = false;
-            gamePointData.resetAll();
 
             for (Player oPlayer : Bukkit.getOnlinePlayers())
                 for (Player otPlayer : Bukkit.getOnlinePlayers())
                     otPlayer.showPlayer(plugin, oPlayer);
+
+
         }, 200);
     }
 

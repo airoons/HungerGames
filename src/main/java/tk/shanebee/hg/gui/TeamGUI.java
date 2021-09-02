@@ -171,7 +171,7 @@ public class TeamGUI implements InventoryProvider {
         }
 
         if (playerTeam != null) {
-            playerTeam.leave(player, false);
+            playerTeam.leave(player, false, false);
         }
 
         if (team == null) {

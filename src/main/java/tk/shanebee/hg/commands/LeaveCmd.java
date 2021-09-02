@@ -15,7 +15,6 @@ public class LeaveCmd extends BaseCmd {
 		cmdName = "leave";
 		forceInGame = true;
 		argLength = 1;
-		permissionDefault = PermissionDefault.TRUE;
 	}
 
 	@Override

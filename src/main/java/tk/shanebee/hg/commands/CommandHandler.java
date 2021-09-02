@@ -59,6 +59,7 @@ public class CommandHandler {
 
         registerCommand(ChestLocsCmd.class);
         registerCommand(ChestRecalcCmd.class);
+        registerCommand(ChestShowAllCmd.class);
 
         registerCommand(SoundTestCmd.class);
         registerCommand(TeamCmd.class);

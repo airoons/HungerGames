@@ -11,6 +11,8 @@
 # Bukkit Tags: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Tag.html
 
 settings:
+    # Whether tournament mode is enabled
+    practice-mode: true
     # When enabled, more informative debug messages will be sent when errors occur
     debug: false
     # When enabled, if a player joins an arena, a message will broadcast to all players on the server that a game is available to
@@ -169,9 +171,15 @@ chestspawning:
     globalchance: 50
 
 points:
-    per-kill: 50
-    chest-drop: 150
-    surviving: 5
+    per-kill: 5
+    per-team-bonus: 4
+    placement:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
 
 ## KITS
 # Create new ones, rename the current ones, delete them, go nuts

@@ -2,8 +2,8 @@ package tk.shanebee.hg.game;
 
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.entity.Player;
+import tk.shanebee.hg.PointType;
 import tk.shanebee.hg.data.Config;
-import tk.shanebee.hg.util.Util;
 
 import java.util.*;
 
@@ -13,29 +13,44 @@ import java.util.*;
 public class GamePointData extends Data {
 
     public Map<Team, Integer> points = new HashMap<>();
+    public Map<Team, List<Team>> kills = new HashMap<>();
+    public Map<Team, List<String>> debugLog = new HashMap<>();
+    public int placement;
 
     protected GamePointData(Game game) {
         super(game);
         for (Team team : game.plugin.getTeamManager().getTeams()) {
             points.put(team, 0);
+            kills.put(team, new ArrayList<>());
+            debugLog.put(team, new ArrayList<>());
         }
     }
 
-    public void addSurvivingPoints(Player player) {
-        Team playerTeam = plugin.getTeamManager().getTeamData(player.getUniqueId()).getTeam();
+    public void addGamePoints(Team team, PointType type) {
+        int toAdd = 0;
+        if (type == PointType.KILL) {
+            toAdd = Config.pointsPerKill;
 
-        for (Team team : plugin.getTeamManager().getTeams()) {
-            if (team != playerTeam && team.isAlive())
-                addPoints(team, Config.pointsPerSurviving);
+            debugLog.get(team).add("killed a player: " + toAdd);
+        } else if (type == PointType.TEAM_KILL) {
+            toAdd = Config.pointsPerKill + Config.pointsPerTeamBonus;
+
+            debugLog.get(team).add("killed a player (+ full team kill bonus): " + toAdd);
+        } else if (type == PointType.PLACEMENT) {
+            toAdd = placement;
+
+            debugLog.get(team).add("placement: " + toAdd);
         }
-    }
-
-    public void addGamePoints(Player player, int toAdd) {
-        Team team = plugin.getTeamManager().getTeamData(player.getUniqueId()).getTeam();
-        if (team == null)
-            return;
 
         addPoints(team, toAdd);
+    }
+
+    public void printDebugLog() {
+        plugin.getLogger().info("---- Point history: -----");
+        for (Map.Entry<Team, List<String>> entry : debugLog.entrySet()) {
+            for (String log : entry.getValue())
+                plugin.getLogger().info("[" + entry.getKey().getName() + "] " + log);
+        }
     }
 
     public void addPoints(Team team, int toAdd) {
@@ -137,5 +152,13 @@ public class GamePointData extends Data {
         for (Team team : game.plugin.getTeamManager().getTeams()) {
             points.put(team, 0);
         }
-    };
+    }
+
+    public boolean hasKilledBefore(Team team, Team toCheck) {
+        return kills.get(team).contains(toCheck);
+    }
+
+    public void setPlacement(int placement) {
+        this.placement = placement;
+    }
 }

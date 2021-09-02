@@ -208,13 +208,6 @@ public class CommandListener implements CommandExecutor, TabCompleter {
 
 	// Send a list of all available commands for the sender
 	private void sendCommands(CommandSender sender) {
-        Util.scm(sender, "&4*&c&m                         &7*( &3&lHungerGames &7)*&c&m                          &4*");
-        cmdHandler.getCommands().forEach(command -> {
-            if (command.hasPermission(sender)) {
-                Util.scm(sender, "  &7&l- " + command.sendHelpLine());
-            }
-        });
-        Util.scm(sender, "&4*&c&m                                                                             &4*");
+		Util.sendPrefixedMessage(sender, plugin.getLang().cmd_base_noperm);
     }
-
 }

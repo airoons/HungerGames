@@ -39,7 +39,6 @@ public class TeamManager {
     }
 
     public void addTeam(Team team) {
-        Util.log("adding team");
         teams.put(team.getId(), team);
     }
 
@@ -49,6 +48,12 @@ public class TeamManager {
 
     public void clearTeams() {
         teams.clear();
+    }
+
+    public void resetTeams() {
+        for (Team team : teams.values()) {
+            team.reset();
+        }
     }
 
     public boolean hasTeam(String name) {
