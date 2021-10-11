@@ -8,6 +8,7 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.data.Language;
+import tk.shanebee.hg.game.Game;
 import tk.shanebee.hg.util.Util;
 
 /**
@@ -50,40 +51,41 @@ public class KillManager {
 	}
 
     /** Get the death message when a player is killed by an entity
-     * @param name Name of player whom died
+     * @param player Player who died
      * @param entity Entity that killed this player
+	 * @param game Active game
      * @return Death string including the victim's name and the killer
      */
-	public String getKillString(String name, Entity entity) {
+	public String getKillString(Player player, Entity entity, Game game) {
 		if (entity.hasMetadata("death-message")) {
-			return entity.getMetadata("death-message").get(0).asString().replace("<player>", name);
+			return entity.getMetadata("death-message").get(0).asString().replace("<player>", Placeholders.getTeamColorFormatted(player) + player.getName());
 		}
 		switch (entity.getType()) {
             case ARROW:
                 if (!isShotByPlayer(entity)) {
-                    return (lang.death_skeleton.replace("<player>", name));
+                    return (lang.death_skeleton.replace("<player>", Placeholders.getTeamColorFormatted(player) + player.getName()));
                 } else {
-                    return getPlayerKillString(name, getShooter(entity), true);
+                    return getPlayerKillString(player, getShooter(entity), true);
                 }
 			case PLAYER:
-				return getPlayerKillString(name, ((Player) entity), false);
+				return getPlayerKillString(player, ((Player) entity), false);
 			case ZOMBIE:
-				return (lang.death_zombie.replace("<player>", name));
+				return (lang.death_zombie.replace("<player>", Placeholders.getTeamColorFormatted(player) + player.getName()));
 			case SKELETON:
 			case SPIDER:
-				return (lang.death_spider.replace("<player>", name));
+				return (lang.death_spider.replace("<player>", Placeholders.getTeamColorFormatted(player) + player.getName()));
 			case DROWNED:
-				return (lang.death_drowned.replace("<player>", name));
+				return (lang.death_drowned.replace("<player>", Placeholders.getTeamColorFormatted(player) + player.getName()));
 			case TRIDENT:
-				return (lang.death_trident.replace("<player>", name));
+				return (lang.death_trident.replace("<player>", Placeholders.getTeamColorFormatted(player) + player.getName()));
 			case STRAY:
-				return (lang.death_stray.replace("<player>", name));
+				return (lang.death_stray.replace("<player>", Placeholders.getTeamColorFormatted(player) + player.getName()));
 			default:
-				return (lang.death_other_entity.replace("<player>", name));
+				return (lang.death_other_entity.replace("<player>", Placeholders.getTeamColorFormatted(player) + player.getName()));
 		}
 	}
 
-	private String getPlayerKillString(String victimName, Player killer, boolean projectile) {
+	private String getPlayerKillString(Player victim, Player killer, boolean projectile) {
         String weapon;
         if (projectile) {
             weapon = "bow and arrow";
@@ -92,8 +94,8 @@ public class KillManager {
         } else {
             weapon = killer.getInventory().getItemInMainHand().getType().name().toLowerCase().replaceAll("_", " ");
         }
-        return (lang.death_player.replace("<player>", victimName)
-                .replace("<killer>", killer.getName())
+        return (lang.death_player.replace("<player>", Placeholders.getTeamColorFormatted(victim) + victim.getName())
+                .replace("<killer>", Placeholders.getTeamColorFormatted(killer) + killer.getName())
                 .replace("<weapon>", weapon));
     }
 

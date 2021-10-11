@@ -6,6 +6,7 @@ import tk.shanebee.hg.PointType;
 import tk.shanebee.hg.data.Config;
 
 import java.util.*;
+import java.util.List;
 
 /**
  * Data class for holding a {@link Game Game's} team points
@@ -16,6 +17,7 @@ public class GamePointData extends Data {
     public Map<Team, List<Team>> kills = new HashMap<>();
     public Map<Team, List<String>> debugLog = new HashMap<>();
     public int placement;
+    public int addedPlace;
 
     protected GamePointData(Game game) {
         super(game);
@@ -37,9 +39,17 @@ public class GamePointData extends Data {
 
             debugLog.get(team).add("killed a player (+ full team kill bonus): " + toAdd);
         } else if (type == PointType.PLACEMENT) {
-            toAdd = placement;
+            toAdd = Config.pointsPerPlacement.get(placement) - addedPlace;
+            addedPlace += toAdd;
 
-            debugLog.get(team).add("placement: " + toAdd);
+            for (Team iTeam : points.keySet()) {
+                if (iTeam != team && !iTeam.isAlive())
+                    continue;
+
+                addPoints(iTeam, toAdd);
+                debugLog.get(iTeam).add("placement: " + toAdd);
+            }
+            return;
         }
 
         addPoints(team, toAdd);
@@ -151,7 +161,11 @@ public class GamePointData extends Data {
     public void resetAll() {
         for (Team team : game.plugin.getTeamManager().getTeams()) {
             points.put(team, 0);
+            kills.put(team, new ArrayList<>());
+            debugLog.put(team, new ArrayList<>());
         }
+        addedPlace = 0;
+        placement = 0;
     }
 
     public boolean hasKilledBefore(Team team, Team toCheck) {

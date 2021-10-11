@@ -232,11 +232,11 @@ public class GameListener implements Listener {
 					game.getGamePointData().addGamePoints(damTeam, (game.getGamePointData().hasKilledBefore(damTeam, team)) ? PointType.TEAM_KILL : PointType.TEAM_KILL);
 				}
 
-				deathString = killManager.getKillString(player.getName(), damager);
+				deathString = killManager.getKillString(player, damager, game);
 			} else if (cause == DamageCause.ENTITY_ATTACK) {
-				deathString = killManager.getKillString(player.getName(), damager);
+				deathString = killManager.getKillString(player, damager, game);
 			} else if (cause == DamageCause.PROJECTILE) {
-				deathString = killManager.getKillString(player.getName(), damager);
+				deathString = killManager.getKillString(player, damager, game);
 				if (killManager.isShotByPlayer(damager) && killManager.getShooter(damager) != player) {
 					gamePlayerData.addKill(killManager.getShooter(damager));
                     leaderboard.addStat(killManager.getShooter(damager), Leaderboard.Stats.KILLS);
@@ -268,7 +268,7 @@ public class GameListener implements Listener {
 						}
 					}
 
-					game.getGamePointData().setPlacement(Config.pointsPerPlacement.get(teamsAlive));
+					game.getGamePointData().setPlacement(teamsAlive);
 					game.getGamePointData().addGamePoints(team, PointType.PLACEMENT);
 				}
 			}
@@ -803,6 +803,7 @@ public class GameListener implements Listener {
 			game = playerData.getGame();
 		    playerData.setOnline(false);
 			playerData.getGame().getGamePlayerData().leave(player, false);
+			playerData.getGame().getGamePlayerData().msgAll(plugin.getKillManager().getKillString(player, null, game));
 		}
 		if (playerManager.hasSpectatorData(player)) {
 		    PlayerData playerData = playerManager.getSpectatorData(player);
@@ -831,7 +832,7 @@ public class GameListener implements Listener {
 						}
 					}
 
-					game.getGamePointData().setPlacement(Config.pointsPerPlacement.get(teamsAlive + 1));
+					game.getGamePointData().setPlacement(teamsAlive + 1);
 					game.getGamePointData().addGamePoints(td.getTeam(), PointType.PLACEMENT);
 				}
 			}

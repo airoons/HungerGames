@@ -259,6 +259,7 @@ public class Game {
         gameArenaData.status = Status.COUNTDOWN;
         starting = new StartingTask(this);
         gameBlockData.updateLobbyBlock();
+        gamePointData.resetAll();
     }
 
     /**
@@ -346,7 +347,7 @@ public class Game {
 
         for (Team aTeam : plugin.getTeamManager().getTeams()) {
             if (aTeam.isAlive()) {
-                gamePointData.setPlacement(Config.pointsPerPlacement.get(1));
+                gamePointData.setPlacement(1);
                 gamePointData.addGamePoints(aTeam, PointType.PLACEMENT);
                 break;
             }
@@ -480,7 +481,10 @@ public class Game {
                 for (Player otPlayer : Bukkit.getOnlinePlayers())
                     otPlayer.showPlayer(plugin, oPlayer);
 
+            if (Config.practiceMode)
+                plugin.getTeamManager().resetTeams();
 
+            gamePointData.resetAll();
         }, 200);
     }
 

@@ -155,4 +155,17 @@ public class Placeholders extends PlaceholderExpansion {
 
         return nickColor;
     }
+
+    public static String getTeamColorFormatted(Player player) {
+        TeamData td = HG.getPlugin().getTeamManager().getTeamData(player.getUniqueId());
+
+        String nickColor = (HG.getPlugin().getPlayerManager().hasPlayerData(player)) ? "&f" : "&7";
+        if (player.hasPermission("bedwars.admin.chat"))
+            nickColor = "&c";
+
+        if (td.getTeam() != null)
+            return String.valueOf(td.getTeam().getChatColor());
+
+        return nickColor;
+    }
 }
