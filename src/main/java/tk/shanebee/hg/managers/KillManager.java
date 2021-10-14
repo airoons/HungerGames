@@ -57,6 +57,9 @@ public class KillManager {
      * @return Death string including the victim's name and the killer
      */
 	public String getKillString(Player player, Entity entity, Game game) {
+		if (entity == null)
+			return (lang.death_other_entity.replace("<player>", Placeholders.getTeamColorFormatted(player) + player.getName()));
+
 		if (entity.hasMetadata("death-message")) {
 			return entity.getMetadata("death-message").get(0).asString().replace("<player>", Placeholders.getTeamColorFormatted(player) + player.getName());
 		}

@@ -406,7 +406,7 @@ public class GamePlayerData extends Data {
      * Make a player leave the game
      *
      * @param player Player to leave the game
-     * @param death  Whether the player has died or not (Generally should be false)
+     * @param death  Whether the player has died or not (Genefrally should be false)
      */
     public void leave(Player player, Boolean death) {
         Bukkit.getPluginManager().callEvent(new PlayerLeaveGameEvent(game, player, death));

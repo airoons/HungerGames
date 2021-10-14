@@ -60,7 +60,11 @@ public class Team {
      */
     public void join(Player player) {
         TeamData td = HG.getPlugin().getTeamManager().getTeamData(player.getUniqueId());
+        if (td.getTeam() != null && td.getTeam() == this)
+            return;
+
         td.setTeam(this);
+
         if (Config.practiceMode) {
             if (players.size() > 0)
                 messageMembers(HG.getPlugin().getLang().team_member_joined.replace("<player>", player.getName()));

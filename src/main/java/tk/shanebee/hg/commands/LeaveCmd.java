@@ -20,6 +20,9 @@ public class LeaveCmd extends BaseCmd {
 	@Override
 	public boolean run() {
 		Game game;
+		if (!Config.practiceMode)
+			return true;
+
 		if (playerManager.hasPlayerData(player)) {
 			game = playerManager.getPlayerData(player).getGame();
 			if (Config.economy) {

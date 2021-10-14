@@ -199,9 +199,14 @@ public class GameListener implements Listener {
 			PlayerData pd = playerManager.getPlayerData(player);
 			if (pd != null) {
 				if (event.getFinalDamage() >= player.getHealth()) {
+
 					if (hasTotem(player)) return;
 					event.setCancelled(true);
-					processDeath(player, pd.getGame(), null, event.getCause());
+
+					if (player.getLastDamageCause() != null && player.getLastDamageCause() instanceof EntityDamageByEntityEvent)
+						processDeath(player, pd.getGame(), ((EntityDamageByEntityEvent) player.getLastDamageCause()).getDamager(), event.getCause());
+					else
+						processDeath(player, pd.getGame(), null, event.getCause());
 				}
 			}
 		}
@@ -274,7 +279,7 @@ public class GameListener implements Listener {
 			}
 
 			// Send death message to all players in game
-			gamePlayerData.msgAll(lang.death_fallen + " &d" + deathString);
+			gamePlayerData.msgAll(deathString);
 			gamePlayerData.soundAll(Sound.BLOCK_BEACON_DEACTIVATE, 1f, 1f);
 
 			leaderboard.addStat(player, Leaderboard.Stats.DEATHS);
@@ -637,7 +642,7 @@ public class GameListener implements Listener {
 			Status status = game.getGameArenaData().getStatus();
 			if (status == Status.RUNNING || status == Status.BEGINNING && game.getGameBlockData() != null) {
 				for (ChestDrop chestDrop : game.getChestDrop().getChests())
-					if (chestDrop.getBeforeBlock().getLocation().equals(block.getLocation())) return;
+					if (chestDrop.getBeforeBlock() != null && chestDrop.getBeforeBlock().getLocation().equals(block.getLocation())) return;
 
 				game.getGameBlockData().recordBlockBreak(block);
 			}
@@ -776,7 +781,7 @@ public class GameListener implements Listener {
 		}
 
 		for (Player oPlayer : Bukkit.getOnlinePlayers()) {
-			if (gameRunning && (playerManager.hasPlayerData(oPlayer) || playerManager.hasSpectatorData(oPlayer)))
+			if (gameRunning)
 				oPlayer.hidePlayer(plugin, player);
 		}
 
@@ -803,7 +808,8 @@ public class GameListener implements Listener {
 			game = playerData.getGame();
 		    playerData.setOnline(false);
 			playerData.getGame().getGamePlayerData().leave(player, false);
-			playerData.getGame().getGamePlayerData().msgAll(plugin.getKillManager().getKillString(player, null, game));
+			if (game != null && (game.getGameArenaData().getStatus() == Status.RUNNING || game.getGameArenaData().getStatus() == Status.BEGINNING))
+				playerData.getGame().getGamePlayerData().msgAll(plugin.getKillManager().getKillString(player, null, game));
 		}
 		if (playerManager.hasSpectatorData(player)) {
 		    PlayerData playerData = playerManager.getSpectatorData(player);
@@ -813,7 +819,7 @@ public class GameListener implements Listener {
 
 		TeamData td = HG.getPlugin().getTeamManager().getTeamData(player.getUniqueId());
 		if (td.getTeam() != null) {
-			if (game != null) {
+			if (game != null && (game.getGameArenaData().getStatus() == Status.RUNNING || game.getGameArenaData().getStatus() == Status.BEGINNING)) {
 				boolean alive = false;
 
 				for (UUID uuid : td.getTeam().getPlayers()) {
@@ -837,7 +843,7 @@ public class GameListener implements Listener {
 				}
 			}
 
-			td.getTeam().leave(player, true, !Config.practiceMode);
+			td.getTeam().leave(player, true, false);
 		}
 
 		event.setQuitMessage(Util.getColString("&c- &7" + event.getPlayer().getName()));

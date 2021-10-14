@@ -1,6 +1,7 @@
 package tk.shanebee.hg.game;
 
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tk.shanebee.hg.PointType;
 import tk.shanebee.hg.data.Config;

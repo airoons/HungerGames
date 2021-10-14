@@ -1,5 +1,6 @@
 package tk.shanebee.hg.commands;
 
+import tk.shanebee.hg.data.Language;
 import tk.shanebee.hg.game.Game;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.Status;
@@ -28,7 +29,7 @@ public class SpectateCmd extends BaseCmd {
 				if (status == Status.RUNNING || status == Status.BEGINNING) {
 					gamePlayerData.spectate(player, true);
 				} else {
-					Util.scm(player, "This game is not running, status: " + status);
+					Util.scm(player, plugin.getLang().arena_cannot_spectate);
 				}
 			} else {
 				Util.scm(player, lang.cmd_delete_noexist);

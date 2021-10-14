@@ -483,8 +483,6 @@ public class Game {
 
             if (Config.practiceMode)
                 plugin.getTeamManager().resetTeams();
-
-            gamePointData.resetAll();
         }, 200);
     }
 
