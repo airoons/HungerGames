@@ -8,7 +8,6 @@ import tk.shanebee.hg.data.ArenaConfig;
 import tk.shanebee.hg.data.Language;
 import tk.shanebee.hg.managers.Manager;
 import tk.shanebee.hg.managers.PlayerManager;
-import tk.shanebee.hg.managers.TeamManager;
 import tk.shanebee.hg.util.Util;
 
 public abstract class BaseCmd {
@@ -16,7 +15,6 @@ public abstract class BaseCmd {
     HG plugin;
     Language lang;
     PlayerManager playerManager;
-    TeamManager teamManager;
     Manager gameManager;
     ArenaConfig arenaConfig;
     PermissionDefault permissionDefault = PermissionDefault.OP;
@@ -39,7 +37,6 @@ public abstract class BaseCmd {
         this.sender = sender;
         this.args = args;
         this.playerManager = plugin.getPlayerManager();
-        this.teamManager = plugin.getTeamManager();
         this.gameManager = plugin.getManager();
         this.arenaConfig = plugin.getArenaConfig();
         this.lang = plugin.getLang();

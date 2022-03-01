@@ -1,20 +1,25 @@
-package tk.shanebee.hg.managers;
+package tk.shanebee.hg.game;
 
 import me.MrGraycat.eGlow.API.Enum.EGlowColor;
+import org.bukkit.Location;
 import tk.shanebee.hg.data.Config;
 import tk.shanebee.hg.data.TeamData;
-import tk.shanebee.hg.game.Team;
-import tk.shanebee.hg.util.Util;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
-public class TeamManager {
+public class GameTeamData extends Data {
 
     private final Map<UUID, TeamData> teamMap;
     private final Map<String, Team> teams;
+    private final Map<String, Location> spawn;
 
-    public TeamManager() {
+    public GameTeamData(Game game) {
+        super(game);
         this.teamMap = new HashMap<>();
+        this.spawn = new HashMap<>();
         this.teams = new HashMap<>(Config.total_team_count);
 
         addTeam(new Team("1", EGlowColor.GREEN));
@@ -52,8 +57,9 @@ public class TeamManager {
 
     public void resetTeams() {
         for (Team team : teams.values()) {
-            team.reset();
+            team.reset(game);
         }
+        spawn.clear();
     }
 
     public boolean hasTeam(String name) {
@@ -62,6 +68,14 @@ public class TeamManager {
 
     public int getTeamSize() {
         return teams.size();
+    }
+
+    public Location getTeamSpawn(Team team){
+        return spawn.get(team.getId());
+    }
+
+    public void setTeamLocation(Team team, Location loc) {
+        spawn.put(team.getId(), loc);
     }
 
     public Collection<Team> getTeams() {

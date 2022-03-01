@@ -60,7 +60,7 @@ public class CompassTask implements Runnable {
 	private String[] getNearestPlayer(Player p, PlayerData pd) {
 
 		Game g = pd.getGame();
-		TeamData td = g.getGameArenaData().getPlugin().getTeamManager().getTeamData(p.getUniqueId());
+		TeamData td = g.getGameTeamData().getTeamData(p.getUniqueId());
 
 		int x = p.getLocation().getBlockX();
 		int y = p.getLocation().getBlockY();

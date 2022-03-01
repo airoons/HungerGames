@@ -1,8 +1,6 @@
 package tk.shanebee.hg.game;
 
 import org.bukkit.Location;
-import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
 import tk.shanebee.hg.Status;
 
 import java.util.ArrayList;
@@ -27,7 +25,7 @@ public class GameArenaData extends Data {
     Status status;
     int chestRefillTime = 0;
     int chestRefillRepeat = 0;
-    final Board board;
+    final Boards boards;
     String aliveCount;
     String timeLeft;
 
@@ -42,7 +40,7 @@ public class GameArenaData extends Data {
         this.roamTime = roamTime;
         this.cost = cost;
         this.spawns = new ArrayList<>();
-        this.board = new Board(game);
+        this.boards = new Boards(game);
         this.chests = new ArrayList<>();
         this.aliveCount = "0/0";
         this.timeLeft = "00:00";
@@ -53,8 +51,8 @@ public class GameArenaData extends Data {
      *
      * @return Board of game
      */
-    public Board getBoard() {
-        return board;
+    public Boards getBoard() {
+        return boards;
     }
 
     /**
@@ -237,7 +235,7 @@ public class GameArenaData extends Data {
      * Update scoreboards for players (including team scoreboards)
      */
     public void updateBoards() {
-        game.gameArenaData.board.updateBoard();
+        game.gameArenaData.boards.updateBoard();
     }
 
     public void setAliveCount(String aliveCount) {

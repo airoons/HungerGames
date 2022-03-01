@@ -27,18 +27,6 @@ public class StartingTask implements Runnable {
         this.timer = arenaData.getCountDownTime() + 1;
         this.game = game;
         this.lang = plugin.getLang();
-        String name = arenaData.getName();
-        if (Config.broadcastJoinMessages) {
-            String joinGame = lang.game_join.replace("<arena>", name);
-
-            List<UUID> allPlayers = new ArrayList<>();
-            allPlayers.addAll(game.getGamePlayerData().getPlayers());
-            allPlayers.addAll(game.getGamePlayerData().getSpectators());
-            for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-                if (!allPlayers.contains(player.getUniqueId()))
-                    Util.sendPrefixedMessage(player, joinGame);
-            }
-        }
 //        game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 1f);
         this.id = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this, 0, 20L);
     }

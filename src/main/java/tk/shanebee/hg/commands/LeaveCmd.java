@@ -3,6 +3,7 @@ package tk.shanebee.hg.commands;
 import org.bukkit.permissions.PermissionDefault;
 import tk.shanebee.hg.*;
 import tk.shanebee.hg.data.Config;
+import tk.shanebee.hg.data.TeamData;
 import tk.shanebee.hg.game.Game;
 import tk.shanebee.hg.game.GameArenaData;
 import tk.shanebee.hg.util.Util;
@@ -39,6 +40,12 @@ public class LeaveCmd extends BaseCmd {
 			game = playerManager.getSpectatorData(player).getGame();
 			game.getGamePlayerData().leaveSpectate(player);
 		}
+
+		TeamData td = game.getGameTeamData().getTeamData(player.getUniqueId());
+		Status status = game.getGameArenaData().getStatus();
+		if (td.isOnTeam(player.getUniqueId()) && (status == Status.READY || status == Status.WAITING || status == Status.COUNTDOWN))
+			td.getTeam().leave(player, game, true, false);
+
 		Util.sendPrefixedMessage(player, lang.cmd_leave_left.replace("<arena>", game.getGameArenaData().getName()));
 		return true;
 	}

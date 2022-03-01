@@ -3,8 +3,7 @@ package tk.shanebee.hg.game;
 import me.MrGraycat.eGlow.API.EGlowAPI;
 import me.MrGraycat.eGlow.API.Enum.EGlowColor;
 import me.MrGraycat.eGlow.EGlow;
-import net.luckperms.api.model.user.User;
-import net.luckperms.api.node.Node;
+import me.MrGraycat.eGlow.Manager.Interface.IEGlowPlayer;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -24,6 +23,7 @@ import java.util.UUID;
 public class Team {
 
     private final String id;
+    private String oid;
     private final List<UUID> players = new ArrayList<>();
     private final EGlowColor glowColor;
 
@@ -35,18 +35,18 @@ public class Team {
     /**
      * Resets team
      */
-    public void reset() {
+    public void reset(Game game) {
         EGlowAPI eGlowAPI = EGlow.getAPI();
 
         for (UUID uuid : players) {
-            TeamData td = HG.getPlugin().getTeamManager().getTeamData(uuid);
+            TeamData td = game.getGameTeamData().getTeamData(uuid);
             td.setTeam(null);
 
             Player p = Bukkit.getPlayer(uuid);
             if (p != null) {
-                eGlowAPI.resetCustomGlowReceivers(p);
-                eGlowAPI.disableGlow(p);
-                Util.resetTabSort(p);
+                IEGlowPlayer ePlayer = eGlowAPI.getEGlowPlayer(p);
+                eGlowAPI.resetCustomGlowReceivers(ePlayer);
+                eGlowAPI.disableGlow(ePlayer);
             }
         }
 
@@ -58,8 +58,8 @@ public class Team {
      *
      * @param player Player to add
      */
-    public void join(Player player) {
-        TeamData td = HG.getPlugin().getTeamManager().getTeamData(player.getUniqueId());
+    public void join(Player player, Game game) {
+        TeamData td = game.getGameTeamData().getTeamData(player.getUniqueId());
         if (td.getTeam() != null && td.getTeam() == this)
             return;
 
@@ -79,18 +79,15 @@ public class Team {
             Player p = Bukkit.getPlayer(uuid);
             if (p != null) {
                 teamOnline.add(p);
-                eGlowAPI.addCustomGlowReceiver(p, player);
-                eGlowAPI.enableGlow(p, glowColor);
+                IEGlowPlayer ePlayer = eGlowAPI.getEGlowPlayer(p);
+                eGlowAPI.addCustomGlowReceiver(ePlayer, player);
+                eGlowAPI.enableGlow(ePlayer, glowColor);
             }
         }
 
-        eGlowAPI.setCustomGlowReceivers(player, teamOnline);
-        eGlowAPI.enableGlow(player, glowColor);
-
-        Util.resetTabSort(player);
-        User user = HG.getPlugin().getLuckPerms().getPlayerAdapter(Player.class).getUser(player);
-        user.data().add(Node.builder("tab.sort." + id).build());
-        HG.getPlugin().getLuckPerms().getUserManager().saveUser(user);
+        IEGlowPlayer ePlayer = eGlowAPI.getEGlowPlayer(player);
+        eGlowAPI.setCustomGlowReceivers(ePlayer, teamOnline);
+        eGlowAPI.enableGlow(ePlayer, glowColor);
     }
 
     /**
@@ -98,8 +95,8 @@ public class Team {
      *
      * @param player Player to remove
      */
-    public void leave(Player player, boolean disableGlow, boolean keepInMemory) {
-        TeamData td = HG.getPlugin().getTeamManager().getTeamData(player.getUniqueId());
+    public void leave(Player player, Game game, boolean disableGlow, boolean keepInMemory) {
+        TeamData td = game.getGameTeamData().getTeamData(player.getUniqueId());
         if (!keepInMemory) {
             td.setTeam(null);
             players.remove(player.getUniqueId());
@@ -114,16 +111,18 @@ public class Team {
         for (UUID uuid : players) {
             Player p = Bukkit.getPlayer(uuid);
             if (p != null) {
-                eGlowAPI.removeCustomGlowReceiver(p, player);
-                eGlowAPI.disableGlow(p);
-                eGlowAPI.enableGlow(p, glowColor);
-                eGlowAPI.removeCustomGlowReceiver(player, p);
+                IEGlowPlayer ePlayer = eGlowAPI.getEGlowPlayer(p);
+                eGlowAPI.removeCustomGlowReceiver(ePlayer, player);
+                eGlowAPI.disableGlow(ePlayer);
+                eGlowAPI.enableGlow(ePlayer, glowColor);
+                ePlayer = eGlowAPI.getEGlowPlayer(player);
+                eGlowAPI.removeCustomGlowReceiver(ePlayer, p);
             }
         }
 
         if (disableGlow) {
-            Util.resetTabSort(player);
-            eGlowAPI.disableGlow(player);
+            IEGlowPlayer ePlayer = eGlowAPI.getEGlowPlayer(player);
+            eGlowAPI.disableGlow(ePlayer);
         }
     }
 

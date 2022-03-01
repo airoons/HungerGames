@@ -1,7 +1,6 @@
 package tk.shanebee.hg.game;
 
 import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tk.shanebee.hg.PointType;
 import tk.shanebee.hg.data.Config;
@@ -22,7 +21,7 @@ public class GamePointData extends Data {
 
     protected GamePointData(Game game) {
         super(game);
-        for (Team team : game.plugin.getTeamManager().getTeams()) {
+        for (Team team : game.gameTeamData.getTeams()) {
             points.put(team, 0);
             kills.put(team, new ArrayList<>());
             debugLog.put(team, new ArrayList<>());
@@ -85,7 +84,7 @@ public class GamePointData extends Data {
     public ArrayList<String> getAll(Player player) {
         ArrayList<String> result = new ArrayList<>();
 
-        Team playerTeam = plugin.getTeamManager().getTeamData(player.getUniqueId()).getTeam();
+        Team playerTeam = game.gameTeamData.getTeamData(player.getUniqueId()).getTeam();
         int playerPos = getPlace(playerTeam);
 
         int i = 1;
@@ -102,7 +101,7 @@ public class GamePointData extends Data {
     public ArrayList<String> getTopPlaces(Player player) {
         ArrayList<String> result = new ArrayList<>();
 
-        Team playerTeam = plugin.getTeamManager().getTeamData(player.getUniqueId()).getTeam();
+        Team playerTeam = game.gameTeamData.getTeamData(player.getUniqueId()).getTeam();
         int playerPos = getPlace(playerTeam);
 
         int i = 1;
@@ -160,7 +159,7 @@ public class GamePointData extends Data {
     }
 
     public void resetAll() {
-        for (Team team : game.plugin.getTeamManager().getTeams()) {
+        for (Team team : game.gameTeamData.getTeams()) {
             points.put(team, 0);
             kills.put(team, new ArrayList<>());
             debugLog.put(team, new ArrayList<>());

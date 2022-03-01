@@ -1,7 +1,9 @@
 package tk.shanebee.hg.listeners;
 
 import io.papermc.lib.PaperLib;
+import me.MrGraycat.eGlow.API.EGlowAPI;
 import me.MrGraycat.eGlow.EGlow;
+import me.MrGraycat.eGlow.Manager.Interface.IEGlowPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -186,11 +188,14 @@ public class GameListener implements Listener {
 				return;
 			}
 			if (event instanceof EntityDamageByEntityEvent) {
-				Team team = plugin.getTeamManager().getTeamData(player.getUniqueId()).getTeam();
+				Game game = playerManager.getGame(player);
+				if (game == null)
+					return;
+				Team team = game.getGameTeamData().getTeamData(player.getUniqueId()).getTeam();
 				if (team == null)
 					return;
 
-				if (team == plugin.getTeamManager().getTeamData( ((EntityDamageByEntityEvent) event).getDamager().getUniqueId() ).getTeam()) {
+				if (team == game.getGameTeamData().getTeamData( ((EntityDamageByEntityEvent) event).getDamager().getUniqueId() ).getTeam()) {
 					event.setCancelled(true);
 				}
 
@@ -226,13 +231,13 @@ public class GameListener implements Listener {
 			GamePlayerData gamePlayerData = game.getGamePlayerData();
 			String deathString;
 
-			Team team = plugin.getTeamManager().getTeamData(player.getUniqueId()).getTeam();
+			Team team = game.getGameTeamData().getTeamData(player.getUniqueId()).getTeam();
 
 			if (damager instanceof Player) {
 				gamePlayerData.addKill(((Player) damager));
 				leaderboard.addStat(((Player) damager), Leaderboard.Stats.KILLS);
 
-				Team damTeam = plugin.getTeamManager().getTeamData(damager.getUniqueId()).getTeam();
+				Team damTeam = game.getGameTeamData().getTeamData(damager.getUniqueId()).getTeam();
 				if (damTeam != null) {
 					game.getGamePointData().addGamePoints(damTeam, (game.getGamePointData().hasKilledBefore(damTeam, team)) ? PointType.TEAM_KILL : PointType.TEAM_KILL);
 				}
@@ -246,7 +251,7 @@ public class GameListener implements Listener {
 					gamePlayerData.addKill(killManager.getShooter(damager));
                     leaderboard.addStat(killManager.getShooter(damager), Leaderboard.Stats.KILLS);
 
-					Team damTeam = plugin.getTeamManager().getTeamData(killManager.getShooter(damager).getUniqueId()).getTeam();
+					Team damTeam = game.getGameTeamData().getTeamData(killManager.getShooter(damager).getUniqueId()).getTeam();
 					if (damTeam != null) {
 						game.getGamePointData().addGamePoints(damTeam, (game.getGamePointData().hasKilledBefore(damTeam, team)) ? PointType.TEAM_KILL : PointType.TEAM_KILL);
 					}
@@ -267,7 +272,7 @@ public class GameListener implements Listener {
 
 				if (!alive) {
 					int teamsAlive = 0;
-					for (Team aTeam : plugin.getTeamManager().getTeams()) {
+					for (Team aTeam : game.getGameTeamData().getTeams()) {
 						if (aTeam.isAlive()) {
 							teamsAlive++;
 						}
@@ -454,10 +459,6 @@ public class GameListener implements Listener {
             Status status = playerManager.getPlayerData(player).getGame().getGameArenaData().getStatus();
             if (status != Status.RUNNING && status != Status.BEGINNING) {
                 event.setCancelled(true);
-                Block block = event.getClickedBlock();
-//                if (block != null && block.getType() != Material.AIR) {
-//                    Util.scm(player, lang.listener_no_interact);
-//                }
             }
         } else if (action == Action.RIGHT_CLICK_BLOCK) {
 			Block block = event.getClickedBlock();
@@ -771,18 +772,12 @@ public class GameListener implements Listener {
 	@EventHandler
 	private void onJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
-		boolean gameRunning = false;
-
-		for (Game game : plugin.getGames()) {
-			if (game.getGameArenaData().getStatus() == Status.RUNNING) {
-				gameRunning = true;
-				break;
-			}
-		}
 
 		for (Player oPlayer : Bukkit.getOnlinePlayers()) {
-			if (gameRunning)
+			if (playerManager.getGame(oPlayer) != null) {
 				oPlayer.hidePlayer(plugin, player);
+				player.hidePlayer(plugin, oPlayer);
+			}
 		}
 
 		Location worldSpawn = Bukkit.getWorlds().get(0).getSpawnLocation();
@@ -790,12 +785,14 @@ public class GameListener implements Listener {
 		player.setLevel(0);
 		player.setExp(0f);
 		PaperLib.teleportAsync(player, worldSpawn).thenAccept(a -> {
-			EGlow.getAPI().disableGlow(player);
-			EGlow.getAPI().resetCustomGlowReceivers(player);
-			Util.resetTabSort(player);
+			EGlowAPI eGlowAPI = EGlow.getAPI();
+			IEGlowPlayer ePlayer = eGlowAPI.getEGlowPlayer(player);
+			EGlow.getAPI().disableGlow(ePlayer);
+			EGlow.getAPI().resetCustomGlowReceivers(ePlayer);
 		});
 
-		event.setJoinMessage(Util.getColString("&a+ &7" + event.getPlayer().getName()));
+//		event.setJoinMessage(Util.getColString("&a+ &7" + event.getPlayer().getName()));
+		event.setJoinMessage("");
 	}
 
 	@EventHandler
@@ -817,9 +814,25 @@ public class GameListener implements Listener {
 			playerData.getGame().getGamePlayerData().leaveSpectate(player);
 		}
 
-		TeamData td = HG.getPlugin().getTeamManager().getTeamData(player.getUniqueId());
-		if (td.getTeam() != null) {
-			if (game != null && (game.getGameArenaData().getStatus() == Status.RUNNING || game.getGameArenaData().getStatus() == Status.BEGINNING)) {
+
+		TeamData td = null;
+		if (game != null) {
+			td = game.getGameTeamData().getTeamData(player.getUniqueId());
+		} else {
+			for (Game rGame : plugin.getGames()) {
+				if (rGame.getGameTeamData() == null)
+					continue;
+
+				td = rGame.getGameTeamData().getTeamData(player.getUniqueId());
+				if (td.isOnTeam(player.getUniqueId()))
+					break;
+
+				td = null;
+			}
+		}
+
+		if (td != null && (game == null || (game.getGameArenaData().getStatus() == Status.READY || game.getGameArenaData().getStatus() == Status.WAITING || game.getGameArenaData().getStatus() == Status.COUNTDOWN))){
+			if (game != null) {
 				boolean alive = false;
 
 				for (UUID uuid : td.getTeam().getPlayers()) {
@@ -832,7 +845,7 @@ public class GameListener implements Listener {
 
 				if (!alive) {
 					int teamsAlive = 0;
-					for (Team aTeam : plugin.getTeamManager().getTeams()) {
+					for (Team aTeam : game.getGameTeamData().getTeams()) {
 						if (aTeam.isAlive()) {
 							teamsAlive++;
 						}
@@ -841,12 +854,13 @@ public class GameListener implements Listener {
 					game.getGamePointData().setPlacement(teamsAlive + 1);
 					game.getGamePointData().addGamePoints(td.getTeam(), PointType.PLACEMENT);
 				}
-			}
 
-			td.getTeam().leave(player, true, false);
+				td.getTeam().leave(player, game, true, false);
+			}
 		}
 
-		event.setQuitMessage(Util.getColString("&c- &7" + event.getPlayer().getName()));
+		event.setQuitMessage("");
+//		event.setQuitMessage(Util.getColString("&c- &7" + event.getPlayer().getName()));
 	}
 
 	@EventHandler
@@ -864,13 +878,30 @@ public class GameListener implements Listener {
 	@EventHandler
 	private void onChat(AsyncPlayerChatEvent event) {
 		boolean isTeam = false;
+		boolean isInGame = false;
 		boolean isSpectator = false;
-		Team team = plugin.getTeamManager().getTeamData(event.getPlayer().getUniqueId()).getTeam();
+
+		event.getRecipients().clear();
+
+		Team team = null;
+		if (playerManager.getGame(event.getPlayer()) != null) {
+			TeamData td = playerManager.getGame(event.getPlayer()).getGameTeamData().getTeamData(event.getPlayer().getUniqueId());
+			if (td.isOnTeam(event.getPlayer().getUniqueId()))
+				team = td.getTeam();
+
+			if (playerManager.hasPlayerData(event.getPlayer())) {
+				for (UUID uuid : playerManager.getGame(event.getPlayer()).getGamePlayerData().getPlayers()) {
+					Player player = Bukkit.getPlayer(uuid);
+					event.getRecipients().add(player);
+				}
+			}
+
+			isInGame = true;
+		}
 
 		if (event.getMessage().startsWith("!") && team != null) {
-			event.setMessage(event.getMessage().substring(1, event.getMessage().length()));
+			event.setMessage(event.getMessage().substring(1));
 
-			event.getRecipients().clear();
 			for (UUID uuid : team.getPlayers()) {
 				Player p = Bukkit.getPlayer(uuid);
 				if (p != null)
@@ -878,18 +909,32 @@ public class GameListener implements Listener {
 			}
 
 			isTeam = true;
-		} else if (!Config.spectateChat) {
+		} else {
 			Player spectator = event.getPlayer();
-			if (playerManager.hasSpectatorData(spectator) && !spectator.hasPermission("bedwars.bypass.spectatechat")) {
-				for (UUID uuid : playerManager.getSpectatorData(spectator).getGame().getGamePlayerData().getPlayers()) {
+			if (playerManager.hasSpectatorData(spectator)) {
+				for (UUID uuid : playerManager.getSpectatorData(spectator).getGame().getGamePlayerData().getSpectators()) {
 					Player player = Bukkit.getPlayer(uuid);
-					event.getRecipients().remove(player);
+					event.getRecipients().add(player);
 				}
 				isSpectator = true;
 			}
 		}
 
-        event.setFormat(Util.getColString((isTeam ? lang.team_prefix : "") + (isSpectator ? "&8[&f" + lang.spectators + "&8] " : "") + Placeholders.getTeamPrefixFormatted(event.getPlayer()) + event.getPlayer().getName() + " &8» &f%2$s"));
+		for (Player player : Bukkit.getOnlinePlayers()) {
+			if (player.hasPermission("suhc.seeallchat"))
+				event.getRecipients().add(player);
+			else if (!isInGame && player.getWorld() == event.getPlayer().getWorld())
+				event.getRecipients().add(player);
+		}
+
+		if (event.getPlayer().hasPermission("hg.sendallchat")) {
+			for (Player player : Bukkit.getOnlinePlayers()) {
+				event.getRecipients().add(player);
+			}
+			event.setFormat(Util.getColString("&8[&cAdmin&8] ") + Util.getColString((isTeam ? lang.team_prefix : "") + (isSpectator ? "&8[&f" + lang.spectators + "&8] " : "") + Placeholders.getTeamPrefixFormatted(event.getPlayer()) + event.getPlayer().getName() + " &8» &f%2$s"));
+		} else {
+			event.setFormat(Util.getColString((isTeam ? lang.team_prefix : "") + (isSpectator ? "&8[&f" + lang.spectators + "&8] " : "") + Placeholders.getTeamPrefixFormatted(event.getPlayer()) + event.getPlayer().getName() + " &8» &f%2$s"));
+		}
 	}
 
 	@EventHandler

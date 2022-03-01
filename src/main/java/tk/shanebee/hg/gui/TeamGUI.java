@@ -18,6 +18,7 @@ import org.bukkit.inventory.meta.BannerMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.data.Config;
+import tk.shanebee.hg.game.Game;
 import tk.shanebee.hg.game.Team;
 import tk.shanebee.hg.util.Util;
 
@@ -29,8 +30,13 @@ public class TeamGUI implements InventoryProvider {
     private final InventoryManager invManager;
     private static Map<Material, EGlowColor> colorMap;
     private static Material[] bannerList;
-    private Map<Integer, List<UUID>> savedPlayers;
     private SmartInventory inventory;
+    private Game game;
+
+    public TeamGUI(Game game) {
+        this();
+        this.game = game;
+    }
 
     public TeamGUI() {
         this.plugin = HG.getPlugin();
@@ -72,7 +78,7 @@ public class TeamGUI implements InventoryProvider {
         int size = Config.total_team_count / 9 + 1;
         this.inventory = SmartInventory.builder()
                 .manager(invManager)
-                .provider(new TeamGUI())
+                .provider(new TeamGUI(this.game))
                 .size(Math.min(size, 6), 9)
                 .title(Util.getColString(plugin.getLang().team_gui_title))
                 .build();
@@ -85,7 +91,6 @@ public class TeamGUI implements InventoryProvider {
     @Override
     public void init(Player player, InventoryContents contents) {
         ItemMeta itemMeta;
-        savedPlayers = new HashMap<>();
 
         for (int i = 0; i < Config.total_team_count; i++) {
             if (i >= bannerList.length)
@@ -103,15 +108,12 @@ public class TeamGUI implements InventoryProvider {
                 lore.add(Util.getColString(s));
             });
 
-            Team team = plugin.getTeamManager().getTeam(String.valueOf(i + 1));
+            Team team = game.getGameTeamData().getTeam(String.valueOf(i + 1));
             if (team != null) {
-                savedPlayers.put(i, team.getPlayers());
                 for (UUID uuid : team.getPlayers()) {
                     OfflinePlayer p = Bukkit.getOfflinePlayer(uuid);
                     lore.add(Util.getColString(" &f" + p.getName()));
                 }
-            } else {
-                savedPlayers.put(i, new ArrayList<>());
             }
 
             itemMeta.setLore(lore);
@@ -126,8 +128,8 @@ public class TeamGUI implements InventoryProvider {
     @Override
     public void update(Player player, InventoryContents contents) {
         for (int i = 0; i < Config.total_team_count; i++) {
-            Team team = plugin.getTeamManager().getTeam(String.valueOf(i + 1));
-            if (team != null && !savedPlayers.get(i).equals(team.getPlayers())) {
+            Team team = game.getGameTeamData().getTeam(String.valueOf(i + 1));
+            if (team != null) {
                 ItemStack item = new ItemStack(bannerList[i]);
                 ItemMeta itemMeta = item.getItemMeta();
                 EGlowColor glowColor = colorMap.get(item.getType());
@@ -143,8 +145,6 @@ public class TeamGUI implements InventoryProvider {
                     lore.add(Util.getColString(" &f" + p.getName()));
                 }
 
-                savedPlayers.put(i, team.getPlayers());
-
                 itemMeta.setLore(lore);
                 item.setItemMeta(itemMeta);
 
@@ -156,8 +156,8 @@ public class TeamGUI implements InventoryProvider {
     }
 
     private void attemptJoin(Player player, int slot, Material material) {
-        Team team = plugin.getTeamManager().getTeam(String.valueOf(slot + 1));
-        Team playerTeam = plugin.getTeamManager().getTeamData(player.getUniqueId()).getTeam();
+        Team team = game.getGameTeamData().getTeam(String.valueOf(slot + 1));
+        Team playerTeam = game.getGameTeamData().getTeamData(player.getUniqueId()).getTeam();
 
         if (playerTeam != null && playerTeam == team) {
             Util.scm(player, plugin.getLang().already_in_team);
@@ -171,19 +171,20 @@ public class TeamGUI implements InventoryProvider {
         }
 
         if (playerTeam != null) {
-            playerTeam.leave(player, false, false);
+            playerTeam.leave(player, game, false, false);
         }
 
         if (team == null) {
             team = new Team(String.valueOf(slot + 1), colorMap.get(material));
-            team.join(player);
-            plugin.getTeamManager().addTeam(team);
+            team.join(player, game);
+            game.getGameTeamData().addTeam(team);
 
             player.closeInventory();
             return;
         }
 
-        team.join(player);
+        team.join(player, game);
         player.closeInventory();
+        game.getGamePlayerData().join(player);
     }
 }

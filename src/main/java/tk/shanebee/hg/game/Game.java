@@ -2,7 +2,6 @@ package tk.shanebee.hg.game;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.Directional;
 import org.bukkit.entity.Player;
@@ -61,6 +60,7 @@ public class Game {
     final GameCommandData gameCommandData;
     final GameBorderData gameBorderData;
     final GamePointData gamePointData;
+    final GameTeamData gameTeamData;
 
     public boolean gracePeriod;
     private boolean gameEnded;
@@ -125,6 +125,7 @@ public class Game {
         this.mobManager = new MobManager(this);
         this.bar = new GameBarData(this);
         this.gamePlayerData = new GamePlayerData(this);
+        this.gameTeamData = new GameTeamData(this);
         this.gameBlockData = new GameBlockData(this);
         this.gameItemData = new GameItemData(this);
         this.gameCommandData = new GameCommandData(this);
@@ -205,6 +206,10 @@ public class Game {
      */
     public GamePointData getGamePointData() {
         return gamePointData;
+    }
+
+    public GameTeamData getGameTeamData() {
+        return gameTeamData;
     }
 
     public StartingTask getStartingTask() {
@@ -290,24 +295,15 @@ public class Game {
             gameBorderData.setBorder(gameArenaData.timer);
         }
 
-        ArrayList<Player> toHide = new ArrayList<>();
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            if (!playerManager.hasPlayerData(p))
-                toHide.add(p);
-        }
-
         for (UUID uuid : gamePlayerData.getPlayersAndSpectators()) {
             Player player = Bukkit.getPlayer(uuid);
             if (player != null) {
                 player.setLevel(0);
-                for (Player p : toHide) {
-                    player.hidePlayer(plugin, p);
-                }
-                gameArenaData.board.fullUpdate(player);
+                gameArenaData.boards.fullUpdate(player);
             }
         }
 
-        for (Team team : plugin.getTeamManager().getTeams()) {
+        for (Team team : gameTeamData.getTeams()) {
             if (team == null) continue;
             for (UUID uuid : team.getPlayers()) {
                 Player player = Bukkit.getPlayer(uuid);
@@ -345,7 +341,7 @@ public class Game {
             return;
         gameEnded = true;
 
-        for (Team aTeam : plugin.getTeamManager().getTeams()) {
+        for (Team aTeam : gameTeamData.getTeams()) {
             if (aTeam.isAlive()) {
                 gamePointData.setPlacement(1);
                 gamePointData.addGamePoints(aTeam, PointType.PLACEMENT);
@@ -373,12 +369,12 @@ public class Game {
         // Broadcast wins
         String broadcast = lang.player_won.replace("<arena>", gameArenaData.name).replace("<winner>", winner);
         if (Config.broadcastWinMessages) {
-            Util.broadcast(broadcast);
-
             String title = Util.getColString(lang.game_over);
             String subtitle = Util.getColString(broadcast);
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                player.sendTitle(title, subtitle, 5, 100, 5);
+            for (UUID u : gamePlayerData.getPlayersAndSpectators()) {
+                Player p = Bukkit.getPlayer(u);
+                if (p != null)
+                    p.sendTitle(title, subtitle, 5, 100, 5);
             }
         } else {
             gamePlayerData.msgAllPlayers(broadcast);
@@ -479,10 +475,13 @@ public class Game {
 
             for (Player oPlayer : Bukkit.getOnlinePlayers())
                 for (Player otPlayer : Bukkit.getOnlinePlayers())
+                if (playerManager.getGame(oPlayer) == null && playerManager.getGame(otPlayer) == null) {
+                    oPlayer.showPlayer(plugin, otPlayer);
                     otPlayer.showPlayer(plugin, oPlayer);
+                }
 
             if (Config.practiceMode)
-                plugin.getTeamManager().resetTeams();
+                gameTeamData.resetTeams();
         }, 200);
     }
 
@@ -545,7 +544,7 @@ public class Game {
     boolean isGameOver() {
         if (gamePlayerData.players.size() <= 1) return true;
         for (UUID uuid : gamePlayerData.players) {
-            Team team = plugin.getTeamManager().getTeamData(uuid).getTeam();
+            Team team = gameTeamData.getTeamData(uuid).getTeam();
 
             if (team != null && (team.getPlayers().size() >= gamePlayerData.players.size())) {
                 for (UUID u : gamePlayerData.players) {

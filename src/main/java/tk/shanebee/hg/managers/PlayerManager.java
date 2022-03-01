@@ -29,6 +29,14 @@ public class PlayerManager {
      * @param player Player to check
      * @return True if player is playing in a game and has data
      */
+    public boolean hasAnyData(Player player) {
+        return hasPlayerData(player.getUniqueId()) || hasSpectatorData(player.getUniqueId());
+    }
+
+    /** Check if a player is playing a game and has PlayerData
+     * @param player Player to check
+     * @return True if player is playing in a game and has data
+     */
     public boolean hasPlayerData(Player player) {
         return hasPlayerData(player.getUniqueId());
     }

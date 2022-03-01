@@ -13,13 +13,13 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.Nullable;
 import tk.shanebee.hg.Status;
-import tk.shanebee.hg.commands.TeamCmd;
 import tk.shanebee.hg.data.Config;
 import tk.shanebee.hg.data.PlayerData;
 import tk.shanebee.hg.events.PlayerJoinGameEvent;
 import tk.shanebee.hg.events.PlayerLeaveGameEvent;
 import tk.shanebee.hg.game.GameCommandData.CommandType;
 import tk.shanebee.hg.gui.SpectatorGUI;
+import tk.shanebee.hg.gui.TeamGUI;
 import tk.shanebee.hg.managers.KitManager;
 import tk.shanebee.hg.managers.PlayerManager;
 import tk.shanebee.hg.util.Util;
@@ -45,9 +45,6 @@ public class GamePlayerData extends Data {
     // Player Lists
     final List<UUID> players = new ArrayList<>();
     final List<UUID> spectators = new ArrayList<>();
-    // This list contains all players who have joined the arena
-    // Will be used to broadcast messages even if a player is no longer in the game
-    final List<UUID> allPlayers = new ArrayList<>();
 
     // Data lists
     final Map<UUID, Integer> kills = new HashMap<>();
@@ -70,7 +67,6 @@ public class GamePlayerData extends Data {
 
     void clearPlayers() {
         players.clear();
-        allPlayers.clear();
     }
 
     /**
@@ -132,7 +128,7 @@ public class GamePlayerData extends Data {
         for (UUID u : players) {
             Player p = Bukkit.getPlayer(u);
             if (p != null)
-                p.teleport(pickSpawn());
+                p.teleport(getSpawn(game.gameTeamData.getTeamData(u).getTeam()));
         }
     }
 
@@ -228,8 +224,8 @@ public class GamePlayerData extends Data {
      * @param message Message to send
      */
     public void msgAllPlayers(String message) {
-        List<UUID> allPlayers = new ArrayList<>(this.allPlayers);
-        allPlayers.addAll(this.spectators);
+        List<UUID> allPlayers = getPlayersAndSpectators();
+
         for (UUID u : allPlayers) {
             Player p = Bukkit.getPlayer(u);
             if (p != null)
@@ -237,7 +233,19 @@ public class GamePlayerData extends Data {
         }
     }
 
-    Location pickSpawn() {
+    Location getSpawn(Team team) {
+        GameArenaData gameArenaData = game.getGameArenaData();
+        Location l = gameArenaData.spawns.get(2 * (Integer.parseInt(team.getId()) - 1));
+        if (l == null)
+            return null;
+
+        if (containsPlayer(l))
+            l = gameArenaData.spawns.get(2 * (Integer.parseInt(team.getId()) - 1) + 1);
+
+        return l;
+    }
+
+    Location pickRandomSpawn() {
         GameArenaData gameArenaData = game.getGameArenaData();
         double spawn = getRandomIntegerBetweenRange(gameArenaData.maxPlayers - 1);
         if (containsPlayer(gameArenaData.spawns.get(((int) spawn)))) {
@@ -256,7 +264,7 @@ public class GamePlayerData extends Data {
 
         for (UUID u : players) {
             Player p = Bukkit.getPlayer(u);
-            if (p != null && p.getLocation().getBlock().equals(location.getBlock()))
+            if (p != null && p.getWorld() == location.getWorld() && p.getLocation().distance(location) < 3)
                 return true;
         }
         return false;
@@ -323,8 +331,14 @@ public class GamePlayerData extends Data {
             if (!vaultCheck(player)) {
                 return;
             }
-            if (plugin.getTeamManager().getTeamData(player.getUniqueId()).getTeam() == null) {
-                Util.scm(player, lang.must_have_team);
+            if (game.gameTeamData.getTeamData(player.getUniqueId()).getTeam() == null) {
+                if (!Config.practiceMode)
+                    Util.scm(player, lang.must_have_team);
+                else {
+                    TeamGUI teamGUI = new TeamGUI(game);
+                    teamGUI.load();
+                    teamGUI.open(player);
+                }
                 return;
             }
 
@@ -343,9 +357,8 @@ public class GamePlayerData extends Data {
 
             UUID uuid = player.getUniqueId();
             players.add(uuid);
-            allPlayers.add(uuid);
 
-            Location loc = pickSpawn();
+            Location loc = getSpawn(game.gameTeamData.getTeamData(uuid).getTeam());
             if (loc.getBlock().getRelative(BlockFace.DOWN).getType() == Material.AIR) {
                 while (loc.getBlock().getRelative(BlockFace.DOWN).getType() == Material.AIR) {
                     loc.setY(loc.getY() - 1);
@@ -354,7 +367,7 @@ public class GamePlayerData extends Data {
             Location previousLocation = player.getLocation();
 
             for (Player oPlayer : Bukkit.getOnlinePlayers()) {
-                if (playerManager.hasPlayerData(oPlayer))
+                if (playerManager.getGame(oPlayer) == null)
                     oPlayer.showPlayer(plugin, player);
             }
 
@@ -366,7 +379,7 @@ public class GamePlayerData extends Data {
                     playerData.setPreviousLocation(previousLocation);
                 }
                 playerManager.addPlayerData(playerData);
-                gameArenaData.board.setBoard(player);
+                gameArenaData.boards.setBoard(player);
 
                 heal(player);
                 freeze(player);
@@ -381,11 +394,7 @@ public class GamePlayerData extends Data {
                     String broadcast = lang.player_joined_game
                             .replace("<arena>", gameArenaData.getName())
                             .replace("<player>", player.getName());
-                    if (Config.broadcastJoinMessages) {
-                        Util.broadcast(broadcast);
-                    } else {
-                        msgAll(broadcast);
-                    }
+                    msgAll(broadcast);
                 }
                 kitHelp(player);
                 player.playSound(player.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1f, 1f);
@@ -396,6 +405,18 @@ public class GamePlayerData extends Data {
                 game.gameBlockData.updateLobbyBlock();
                 game.gameArenaData.updateBoards();
                 game.gameCommandData.runCommands(CommandType.JOIN, player);
+
+                for (Player p : Bukkit.getOnlinePlayers()) {
+                    PlayerData data = playerManager.getPlayerData(p);
+
+                    if (data == null || data.getGame() == null) {
+                        p.hidePlayer(plugin, player);
+                        player.hidePlayer(plugin, p);
+                    } else if (data.getGame() == game) {
+                        p.showPlayer(plugin, player);
+                        player.showPlayer(plugin, p);
+                    }
+                }
             });
 
             soundAll(Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1f, 1f);
@@ -414,8 +435,7 @@ public class GamePlayerData extends Data {
         players.remove(uuid);
         game.gameArenaData.aliveCount = lang.players_alive_num.replace("<num>", String.valueOf(players.size()));
         if (!death) {
-            allPlayers.remove(uuid); // Only remove the player if they voluntarily left the game
-            game.gameArenaData.board.removeBoard(player);
+            game.gameArenaData.boards.removeBoard(player);
         }
         unFreeze(player);
         if (death) {
@@ -444,7 +464,7 @@ public class GamePlayerData extends Data {
     void exit(Player player, @Nullable Location exitLocation) {
         GameArenaData gameArenaData = game.getGameArenaData();
 
-        gameArenaData.board.removeBoard(player);
+        gameArenaData.boards.removeBoard(player);
 
         player.setInvulnerable(false);
         if (gameArenaData.getStatus() == Status.RUNNING)
@@ -465,6 +485,15 @@ public class GamePlayerData extends Data {
             PaperLib.teleportAsync(player, loc);
         } else {
             player.teleport(loc);
+        }
+
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (playerManager.getData(p) == null || playerManager.getData(p).getGame() == null) {
+                p.showPlayer(plugin, player);
+                player.showPlayer(plugin, p);
+            } else {
+                player.hidePlayer(plugin, p);
+            }
         }
     }
 
@@ -504,7 +533,7 @@ public class GamePlayerData extends Data {
             }
         }
         game.getGameBarData().addPlayer(spectator);
-        game.gameArenaData.board.setBoard(spectator);
+        game.gameArenaData.boards.setBoard(spectator);
         spectator.getInventory().setItem(0, plugin.getItemStackManager().getSpectatorCompass());
     }
 
@@ -539,7 +568,7 @@ public class GamePlayerData extends Data {
     }
 
     public boolean hadPlayed(UUID uuid) {
-        return allPlayers.contains(uuid);
+        return getPlayersAndSpectators().contains(uuid);
     }
 
     // UTIL

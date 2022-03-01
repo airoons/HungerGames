@@ -4,7 +4,6 @@ import libs.fr.minuskube.inv.InventoryManager;
 import io.lumine.xikage.mythicmobs.MythicMobs;
 import io.lumine.xikage.mythicmobs.mobs.MobManager;
 import io.papermc.lib.PaperLib;
-import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
@@ -52,7 +51,6 @@ public class HG extends JavaPlugin {
 	private Config config;
 	private Manager manager;
 	private PlayerManager playerManager;
-	private TeamManager teamManager;
 	private InventoryManager inventoryManager;
 	private ArenaConfig arenaconfig;
 	private KillManager killManager;
@@ -69,9 +67,6 @@ public class HG extends JavaPlugin {
 
 	//NMS Nbt
 	private NBTApi nbtApi;
-
-	//LuckPerms
-	private LuckPerms luckPermsAPI;
 
 	@Override
 	public void onEnable() {
@@ -91,10 +86,6 @@ public class HG extends JavaPlugin {
         playerSession = new HashMap<>();
         items = new HashMap<>();
         bonusItems = new HashMap<>();
-
-		RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
-		if (provider != null)
-			luckPermsAPI = provider.getProvider();
 
 		config = new Config(this);
 		metrics = new Metrics(this);
@@ -120,7 +111,6 @@ public class HG extends JavaPlugin {
 		mobConfig = new MobConfig(this);
 		randomItems = new RandomItems(this);
         playerManager = new PlayerManager();
-        teamManager = new TeamManager();
 
         inventoryManager = new InventoryManager(this);
         inventoryManager.init();
@@ -129,8 +119,6 @@ public class HG extends JavaPlugin {
 		killManager = new KillManager();
 		manager = new Manager(this);
 		leaderboard = new Leaderboard(this);
-
-		Util.initTeamValues();
 
 		//PAPI check
 		if (pluginManager.getPlugin("PlaceholderAPI") != null) {
@@ -192,7 +180,6 @@ public class HG extends JavaPlugin {
         mobConfig = null;
         randomItems = null;
         playerManager = null;
-        teamManager = null;
         arenaconfig = null;
         killManager = null;
         manager = null;
@@ -235,7 +222,6 @@ public class HG extends JavaPlugin {
 			}
 		}
 		games.clear();
-		teamManager.clearTeams();
 	}
 
 	/** Get the instance of this plugin
@@ -286,13 +272,6 @@ public class HG extends JavaPlugin {
     public PlayerManager getPlayerManager() {
         return playerManager;
     }
-
-	/** Get an instance of the TeamManager
-	 * @return TeamManager
-	 */
-	public TeamManager getTeamManager() {
-		return teamManager;
-	}
 
 	/** Get an instance of the SmartInv InventoryManager
 	 * @return InventoryManager
@@ -382,12 +361,5 @@ public class HG extends JavaPlugin {
 	 */
 	public MobManager getMmMobManager() {
 		return this.mmMobManager;
-	}
-
-	/** Get LuckPerms API
-	 * @return Luck perms api instance
-	 */
-	public LuckPerms getLuckPerms() {
-		return luckPermsAPI;
 	}
 }
