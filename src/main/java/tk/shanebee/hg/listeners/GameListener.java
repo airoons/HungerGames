@@ -51,6 +51,7 @@ import tk.shanebee.hg.managers.PlayerManager;
 import tk.shanebee.hg.tasks.ChestDropTask;
 import tk.shanebee.hg.util.BlockUtils;
 import tk.shanebee.hg.util.Util;
+import tk.shanebee.hg.util.Vault;
 
 import java.util.Collections;
 import java.util.UUID;
@@ -437,8 +438,18 @@ public class GameListener implements Listener {
         ItemStack item = event.getItem();
         if (item == null || item.getType() != Material.COMPASS) return false;
         return item.getItemMeta() != null && item.getItemMeta().getDisplayName().equalsIgnoreCase(Util.getColString(lang.spectator_compass));
-
     }
+
+	private boolean isQuitGameItem(PlayerInteractEvent event) {
+		Action action = event.getAction();
+		Player player = event.getPlayer();
+		if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) return false;
+		if (!playerManager.hasAnyData(player)) return false;
+
+		ItemStack item = event.getItem();
+		if (item == null || item.getType() != Material.RED_DYE) return false;
+		return item.getItemMeta() != null && item.getItemMeta().getDisplayName().equalsIgnoreCase(Util.getColString(lang.quit_game_item));
+	}
 
     private void handleSpectatorCompass(Player player) {
         GamePlayerData gamePlayerData = playerManager.getSpectatorData(player).getGame().getGamePlayerData();
@@ -450,11 +461,18 @@ public class GameListener implements Listener {
 	private void onInteract(PlayerInteractEvent event) {
 		Player player = event.getPlayer();
 		Action action = event.getAction();
-        if (playerManager.hasSpectatorData(player)) {
-            event.setCancelled(true);
-            if (isSpectatorCompass(event)) {
-                handleSpectatorCompass(player);
-            }
+		if (Config.practiceMode && isQuitGameItem(event)) {
+			Game game = playerManager.getGame(player);
+			if (playerManager.hasPlayerData(player)) {
+				game.getGamePlayerData().leave(player, false);
+			} else {
+				game.getGamePlayerData().leaveSpectate(player);
+			}
+		} else if (playerManager.hasSpectatorData(player)) {
+			event.setCancelled(true);
+			if (isSpectatorCompass(event)) {
+				handleSpectatorCompass(player);
+			}
         } else if (action != Action.PHYSICAL && playerManager.hasPlayerData(player)) {
             Status status = playerManager.getPlayerData(player).getGame().getGameArenaData().getStatus();
             if (status != Status.RUNNING && status != Status.BEGINNING) {
@@ -813,7 +831,6 @@ public class GameListener implements Listener {
             playerData.setOnline(false);
 			playerData.getGame().getGamePlayerData().leaveSpectate(player);
 		}
-
 
 		TeamData td = null;
 		if (game != null) {

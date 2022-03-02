@@ -33,11 +33,16 @@ public class ItemStackManager {
 
     private final HG plugin;
     private final NBTApi nbtApi;
+    private ItemStack quitGameItem = new ItemStack(Material.RED_DYE);
 
     public ItemStackManager(HG p) {
         this.plugin = p;
         this.nbtApi = p.getNbtApi();
         setKits();
+
+        ItemMeta meta = quitGameItem.getItemMeta();
+        meta.setDisplayName(Util.getColString(plugin.getLang().quit_game_item));
+        quitGameItem.setItemMeta(meta);
     }
 
     public void setKits() {
@@ -224,4 +229,7 @@ public class ItemStackManager {
         return compass;
     }
 
+    public ItemStack getQuitGameItem() {
+        return quitGameItem;
+    }
 }

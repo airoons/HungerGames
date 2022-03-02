@@ -7,6 +7,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.Nullable;
 import tk.shanebee.hg.HG;
@@ -88,6 +89,9 @@ public class PlayerData implements Cloneable {
         player.setInvulnerable(false);
         restoreHealth(player);
         player.setScoreboard(scoreboard);
+        for (PotionEffect ef : player.getActivePotionEffects()) {
+            player.removePotionEffect(ef.getType());
+        }
     }
 
     // Restores later if player has an item in their inventory which changes their max health value

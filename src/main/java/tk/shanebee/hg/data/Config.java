@@ -78,6 +78,7 @@ public class Config {
     public static int borderCountdownStart;
     public static int borderCountdownEnd;
     public static int borderFinalSize;
+    public static int gasStartTime;
 
     //Spectate
     public static boolean spectateEnabled;
@@ -179,6 +180,7 @@ public class Config {
         borderCountdownStart = config.getInt("world-border.countdown-start");
         borderCountdownEnd = config.getInt("world-border.countdown-end");
         borderFinalSize = config.getInt("world-border.final-border-size");
+        gasStartTime = config.getInt("gas-start-time");
 
         spectateEnabled = config.getBoolean("spectate.enabled");
         spectateOnDeath = config.getBoolean("spectate.death-to-spectate");

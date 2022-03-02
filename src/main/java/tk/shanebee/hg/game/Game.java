@@ -291,9 +291,6 @@ public class Game {
         if (Config.bossbar) {
             bar.createBossbar(gameArenaData.timer);
         }
-        if (Config.borderEnabled && Config.borderOnStart) {
-            gameBorderData.setBorder(gameArenaData.timer);
-        }
 
         for (UUID uuid : gamePlayerData.getPlayersAndSpectators()) {
             Player player = Bukkit.getPlayer(uuid);
@@ -308,12 +305,13 @@ public class Game {
             for (UUID uuid : team.getPlayers()) {
                 Player player = Bukkit.getPlayer(uuid);
                 if (player != null) {
+                    player.getInventory().clear();
                     Util.log("Team #" + team.getId() + ": " + player.getName());
                 }
             }
         }
 
-        timer = new TimerTask(this, gameArenaData.timer);
+        timer = new TimerTask(this, gameArenaData.countDownTime);
     }
 
     public void cancelTasks() {
@@ -482,6 +480,8 @@ public class Game {
 
             if (Config.practiceMode)
                 gameTeamData.resetTeams();
+
+            gameArenaData.setNextEvent(lang.scoreboard_stage_grace);
         }, 200);
     }
 
@@ -518,26 +518,17 @@ public class Game {
     }
 
     public void resetRandomChests() {
-        Random rand = new Random();
         World world = gameArenaData.getBound().getWorld();
 
-        Block block = null;
+        Block block;
         Directional dir;
-
-        int spawnChance = Config.globalChestChance;
 
         for (ChestData chestData : gameArenaData.chests) {
             block = world.getBlockAt(chestData.getLocation());
-
-            if (rand.nextInt(100) <= spawnChance) {
-                if (block.getType() != Material.CHEST) {
-                    block.setType(Material.CHEST);
-                    dir = (Directional) block.getBlockData();
-                    dir.setFacing(chestData.getBlockFace());
-                    block.setBlockData(dir);
-                }
-            } else if (block.getType() == Material.CHEST)
-                block.setType(Material.AIR);
+            block.setType(Material.CHEST);
+            dir = (Directional) block.getBlockData();
+            dir.setFacing(chestData.getBlockFace());
+            block.setBlockData(dir);
         }
     }
 

@@ -178,6 +178,9 @@ public class Manager {
 		int max = bonus ? Config.maxbonuscontent : Config.maxchestcontent;
 		int min = bonus ? Config.minbonuscontent : Config.minchestcontent;
 
+		if (rg.nextInt(100) > Config.globalChestChance)
+			max = 2;
+
 		int c = rg.nextInt(max) + 1;
 		c = Math.max(c, min);
 		while (c != 0) {

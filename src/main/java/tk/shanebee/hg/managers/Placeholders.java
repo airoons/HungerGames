@@ -59,6 +59,14 @@ public class Placeholders extends PlaceholderExpansion {
             return getTeamPrefixFormatted(onlinePlayer);
         }
 
+        if (identifier.equalsIgnoreCase("team_color")) {
+            if (!player.isOnline())
+                return "";
+            Player onlinePlayer = player.getPlayer();
+
+            return getTeamColor(onlinePlayer);
+        }
+
         if (identifier.startsWith("lb_player_")) {
             int leader = Integer.parseInt(identifier.replace("lb_player_", ""));
             if (leaderboard.getStatsPlayers(Leaderboard.Stats.WINS).size() >= leader)
@@ -144,11 +152,25 @@ public class Placeholders extends PlaceholderExpansion {
         }
     }
 
+    public static String getTeamColor(Player player) {
+        Game game = HG.getPlugin().getPlayerManager().getGame(player);
+
+        String nickColor = (HG.getPlugin().getPlayerManager().hasPlayerData(player)) ? "&f" : "&7";
+
+        if (game != null) {
+            TeamData td = game.getGameTeamData().getTeamData(player.getUniqueId());
+            if (td.isOnTeam(player.getUniqueId()))
+                return String.valueOf(td.getTeam().getChatColor());
+        }
+
+        return nickColor;
+    }
+
     public static String getTeamPrefixFormatted(Player player) {
         Game game = HG.getPlugin().getPlayerManager().getGame(player);
 
         String nickColor = (HG.getPlugin().getPlayerManager().hasPlayerData(player)) ? "&f" : "&7";
-        if (player.hasPermission("bedwars.admin.chat"))
+        if (player.hasPermission("hg.admin.chat"))
             nickColor = "&c";
 
         if (game != null) {
@@ -164,7 +186,7 @@ public class Placeholders extends PlaceholderExpansion {
         Game game = HG.getPlugin().getPlayerManager().getGame(player);
 
         String nickColor = (HG.getPlugin().getPlayerManager().hasPlayerData(player)) ? "&f" : "&7";
-        if (player.hasPermission("bedwars.admin.chat"))
+        if (player.hasPermission("hg.admin.chat"))
             nickColor = "&c";
 
         if (game != null) {

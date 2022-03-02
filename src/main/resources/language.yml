@@ -23,6 +23,7 @@ game-ending-sec: '&athe game is ending in <seconds> second(s)!'
 game-border-closing: '&6The border is coming, you have <seconds> seconds to get to the center of the arena!'
 game-chests-refill: '&6Chests have been refilled'
 game-chests-refill-in: '&6Chests will be refilled in <seconds> seconds!'
+game-gas-starting: '&2Poison cloud has been released!!'
 
 # <min>/<sec> will be replaced with the remaining minutes and seconds in a game
 game-bossbar: '&6&lGame Ends In: &b&l<min> &7min &b&l<sec> &7sec'
@@ -67,6 +68,10 @@ scoreboard-line-self-1: ' &3• &fKills: '
 scoreboard-line-self-2: ' &3• &fChests opened: '
 scoreboard-line-top: '&b&lPoints'
 scoreboard-line-top-places: ' &3<place>. &f<teamname>: &f<points>p'
+scoreboard-stage-grace: '&fGrace period'
+scoreboard-stage-border: '&fBorder'
+scoreboard-stage-refill: '&fChest refill'
+scoreboard-stage-gas: '&fGas released'
 players-alive-num: '&f<num>/24'
 
 #  TEAMS
@@ -319,3 +324,5 @@ team-color-RED: "Red"
 team-color-AQUA: "Blue"
 team-color-DARK_BLUE: "Dark blue"
 team-color-DARK_AQUA: "Cyan"
+
+quit-game-item: "&cPamest spēli"

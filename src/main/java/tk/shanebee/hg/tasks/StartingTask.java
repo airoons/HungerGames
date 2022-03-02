@@ -27,7 +27,6 @@ public class StartingTask implements Runnable {
         this.timer = arenaData.getCountDownTime() + 1;
         this.game = game;
         this.lang = plugin.getLang();
-//        game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 1f);
         this.id = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this, 0, 20L);
     }
 

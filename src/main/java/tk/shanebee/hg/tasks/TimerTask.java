@@ -2,6 +2,9 @@ package tk.shanebee.hg.tasks;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
+import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import tk.shanebee.hg.data.Config;
 import tk.shanebee.hg.data.Language;
 import tk.shanebee.hg.game.Game;
@@ -10,12 +13,11 @@ import tk.shanebee.hg.Status;
 import tk.shanebee.hg.game.GameArenaData;
 
 import java.util.Objects;
+import java.util.UUID;
 
 public class TimerTask implements Runnable {
 
-	private int timer = 0;
 	private int remainingtime;
-	private final int teleportTimer;
 	private final int borderCountdownStart;
 	private final int borderCountdownEnd;
 	private final int id;
@@ -25,13 +27,13 @@ public class TimerTask implements Runnable {
     private final String end_minsec;
     private final String end_sec;
     private final int timerInterval;
+	private TimerStatus status = TimerStatus.GRACE;
 
 	public TimerTask(Game g, int time) {
 		this.remainingtime = time;
 		this.game = g;
 		HG plugin = game.getGameArenaData().getPlugin();
 		this.lang = plugin.getLang();
-		this.teleportTimer = Config.teleportEndTime;
 		this.borderCountdownStart = g.getGameBorderData().getBorderTimer().get(0);
 		this.borderCountdownEnd = g.getGameBorderData().getBorderTimer().get(1);
 		g.getGamePlayerData().getPlayers().forEach(uuid -> Objects.requireNonNull(Bukkit.getPlayer(uuid)).setInvulnerable(false));
@@ -48,64 +50,71 @@ public class TimerTask implements Runnable {
 	@Override
 	public void run() {
 		GameArenaData gameArenaData = game.getGameArenaData();
-		if (game == null || gameArenaData.getStatus() != Status.RUNNING) stop(); //A quick null check!
+		if (game == null || gameArenaData.getStatus() != Status.RUNNING) stop();
 
-		if (Config.bossbar) game.getGameBarData().bossbarUpdate(remainingtime);
+		if (this.remainingtime <= 0) {
+			if (this.status == TimerStatus.GRACE) {
+				this.remainingtime = borderCountdownStart;
+				this.status = TimerStatus.BORDER;
+				game.getGameArenaData().setNextEvent(lang.scoreboard_stage_border);
+			} else if (this.status == TimerStatus.BORDER) {
+				this.remainingtime = gameArenaData.getChestRefillTime();
+				this.status = TimerStatus.REFILL;
+				game.getGameArenaData().setNextEvent(lang.scoreboard_stage_refill);
 
-		if (Config.borderEnabled && remainingtime == borderCountdownStart) {
-			int closingIn = remainingtime - borderCountdownEnd;
-			game.getGameBorderData().setBorder(closingIn);
-			game.getGamePlayerData().msgAll(lang.game_border_closing.replace("<seconds>", String.valueOf(closingIn)));
-		}
+				int closingIn = borderCountdownEnd;
+				game.getGameBorderData().setBorder(closingIn);
+				game.getGamePlayerData().msgAll(lang.game_border_closing.replace("<seconds>", String.valueOf(closingIn)));
+			} else if (this.status == TimerStatus.REFILL) {
+				this.remainingtime = Config.gasStartTime;
+				this.status = TimerStatus.GAS;
+				game.getGameArenaData().setNextEvent(lang.scoreboard_stage_gas);
 
-		if (gameArenaData.getChestRefillTime() > 0) {
-			if (remainingtime == gameArenaData.getChestRefillTime()) {
 				game.getGameBlockData().refillChests();
 				game.getGamePlayerData().msgAll(lang.game_chest_refill);
-					game.getGamePlayerData().soundAll(Sound.BLOCK_FENCE_GATE_OPEN, 1f, 1f);
-			} else {
+				game.getGamePlayerData().soundAll(Sound.BLOCK_FENCE_GATE_OPEN, 1f, 1f);
+			} else if (this.status == TimerStatus.GAS) {
+				game.getGamePlayerData().msgAll(lang.game_gas_starting);
+
+				PotionEffect poison = new PotionEffect(PotionEffectType.POISON, 999999, 1, true, true, true);
+				for (UUID u : game.getGamePlayerData().getPlayers()) {
+					Player p = Bukkit.getPlayer(u);
+					if (p != null) {
+						p.removePotionEffect(PotionEffectType.POISON);
+						p.addPotionEffect(poison);
+					}
+				}
+
+				stop();
+			}
+		} else {
+			if (this.status == TimerStatus.REFILL) {
 				int refillSeconds = remainingtime - gameArenaData.getChestRefillTime();
-				if (refillSeconds == 60 || refillSeconds == 30) {
+				if (refillSeconds == 30 || refillSeconds == 10) {
 					game.getGamePlayerData().msgAll(lang.game_chest_refill_in.replace("<seconds>", String.valueOf(refillSeconds)));
 					game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BIT, 1f, 1f);
 				}
 			}
-		}
 
-//		int refillRepeat = gameArenaData.getChestRefillRepeat();
-//		if (timer == refillRepeat) {
-//			game.getGameBlockData().refillChests();
-//			game.getGamePlayerData().msgAll(lang.game_chest_refill);
-//		}
-
-		if (remainingtime == teleportTimer && Config.teleportEnd) {
-			game.getGamePlayerData().msgAll(lang.game_almost_over);
-			game.getGamePlayerData().respawnAll();
-		} else if (this.remainingtime <= 0) {
-			stop();
-		} else {
-			if (!Config.bossbar && canAnnounceTime(this.remainingtime)) {
-				int minutes = this.remainingtime / 60;
-				int asd = this.remainingtime % 60;
-				if (minutes != 0) {
-					if (asd == 0) {
-					    if (end_min.length() < 1) return;
-                        game.getGamePlayerData().msgAll(end_min.replace("<minutes>", "" + minutes));
-                        game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BANJO, 1f, 1f);
-                    } else {
-					    if (end_minsec.length() < 1) return;
-                        game.getGamePlayerData().msgAll(end_minsec.replace("<minutes>", "" + minutes).replace("<seconds>", "" + asd));
-						game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BANJO, 1f, 1f);
-                    }
-				} else {
-				    if (end_sec.length() < 1) return;
-				    game.getGamePlayerData().msgAll(end_sec.replace("<seconds>", "" + this.remainingtime));
-					game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BANJO, 1f, 1f);
-                }
-			}
+//			int minutes = this.remainingtime / 60;
+//			int asd = this.remainingtime % 60;
+//			if (minutes != 0) {
+//				if (asd == 0) {
+//					if (end_min.length() < 1) return;
+//					game.getGamePlayerData().msgAll(end_min.replace("<minutes>", "" + minutes));
+//					game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BANJO, 1f, 1f);
+//				} else {
+//					if (end_minsec.length() < 1) return;
+//					game.getGamePlayerData().msgAll(end_minsec.replace("<minutes>", "" + minutes).replace("<seconds>", "" + asd));
+//					game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BANJO, 1f, 1f);
+//				}
+//			} else {
+//				if (end_sec.length() < 1) return;
+//				game.getGamePlayerData().msgAll(end_sec.replace("<seconds>", "" + this.remainingtime));
+//				game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BANJO, 1f, 1f);
+//			}
 		}
-		remainingtime = (remainingtime - timerInterval);
-		timer += timerInterval;
+		remainingtime = remainingtime - timerInterval;
 
 		String remainTime = "00:00";
 		if (game.getTimer() != null) {
@@ -118,7 +127,6 @@ public class TimerTask implements Runnable {
 		}
 
 		game.getGameArenaData().setTimeLeft(remainTime);
-//		game.getGameArenaData().updateBoards();
 	}
 
 	private boolean canAnnounceTime(int time) {

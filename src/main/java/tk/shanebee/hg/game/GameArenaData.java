@@ -16,8 +16,8 @@ public class GameArenaData extends Data {
     final int timer;
     final int minPlayers;
     final int maxPlayers;
-    private final int countDownTime;
-    private final int roamTime;
+    int countDownTime;
+    int roamTime;
     int cost;
     final List<Location> spawns;
     public List<ChestData> chests;
@@ -28,6 +28,7 @@ public class GameArenaData extends Data {
     final Boards boards;
     String aliveCount;
     String timeLeft;
+    String nextEvent;
 
     public GameArenaData(Game game, String name, Bound bound, int timer, int minPlayers, int maxPlayers, int countDownTime, int roamTime, int cost) {
         super(game);
@@ -44,6 +45,7 @@ public class GameArenaData extends Data {
         this.chests = new ArrayList<>();
         this.aliveCount = "0/0";
         this.timeLeft = "00:00";
+        this.nextEvent = getPlugin().getLang().scoreboard_stage_grace;
     }
 
     /**
@@ -244,5 +246,13 @@ public class GameArenaData extends Data {
 
     public void setTimeLeft(String timeLeft) {
         this.timeLeft = timeLeft;
+    }
+
+    public String getNextEvent() {
+        return nextEvent;
+    }
+
+    public void setNextEvent(String nextEvent) {
+        this.nextEvent = nextEvent;
     }
 }

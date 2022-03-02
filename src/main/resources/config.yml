@@ -147,6 +147,9 @@ world-border:
     # If true, the centre of the arena will be based on the first spawn location you set
     # If false, the centre will be calculated by the centre of the arena
     center-on-first-spawn: true
+
+gas-start-time: 180
+
 ## SPECTATE
 # When enabled players can spectate games without interfering with players in the game
 spectate:

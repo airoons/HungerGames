@@ -33,6 +33,7 @@ public class Language {
     public String game_border_closing;
     public String game_chest_refill;
     public String game_chest_refill_in;
+    public String game_gas_starting;
     public String players_to_start;
     public String arena_not_ready;
     public String arena_spectate;
@@ -58,6 +59,10 @@ public class Language {
     public String scoreboard_line_self_2;
     public String scoreboard_line_top;
     public String scoreboard_line_top_places;
+    public String scoreboard_stage_grace;
+    public String scoreboard_stage_border;
+    public String scoreboard_stage_refill;
+    public String scoreboard_stage_gas;
     public String team_invite_1;
     public String team_invite_2;
     public String team_invite_3;
@@ -228,6 +233,8 @@ public class Language {
     public String team_points_header;
     public String team_points_list;
 
+    public String quit_game_item;
+
     public Map<EGlowColor, String> team_colors = new HashMap<>();
 
     public Language(HG plugin) {
@@ -317,6 +324,10 @@ public class Language {
         scoreboard_line_self_2 = lang.getString("scoreboard-line-self-2");
         scoreboard_line_top = lang.getString("scoreboard-line-top");
         scoreboard_line_top_places = lang.getString("scoreboard-line-top-places");
+        scoreboard_stage_grace = lang.getString("scoreboard-stage-grace");
+        scoreboard_stage_border = lang.getString("scoreboard-stage-border");
+        scoreboard_stage_refill = lang.getString("scoreboard-stage-refill");
+        scoreboard_stage_gas = lang.getString("scoreboard-stage-gas");
         players_alive = lang.getString("players-alive");
         players_alive_num = lang.getString("players-alive-num");
         team_invite_1 = lang.getString("team-invite-1");
@@ -436,6 +447,7 @@ public class Language {
 
         game_chest_refill = lang.getString("game-chests-refill");
         game_chest_refill_in = lang.getString("game-chests-refill-in");
+        game_gas_starting = lang.getString("game-gas-starting");
         cmd_chest_refill = lang.getString("cmd-chestrefill-set");
         cmd_chest_refill_now = lang.getString("cmd-chestrefill-now");
         cmd_border_center = lang.getString("cmd-border-center");
@@ -499,6 +511,8 @@ public class Language {
         team_cannot_started = lang.getString("team-cannot-started");
         team_points_header = lang.getString("team-points-header");
         team_points_list = lang.getString("team-points-list");
+
+        quit_game_item = lang.getString("quit-game-item");
 
         List<EGlowColor> colors = new ArrayList<>(Arrays.asList(EGlowColor.GREEN, EGlowColor.DARK_GREEN, EGlowColor.YELLOW, EGlowColor.GOLD, EGlowColor.WHITE, EGlowColor.DARK_GRAY, EGlowColor.PINK, EGlowColor.PURPLE, EGlowColor.RED, EGlowColor.AQUA, EGlowColor.DARK_BLUE, EGlowColor.DARK_AQUA));
         for (EGlowColor color : colors) {

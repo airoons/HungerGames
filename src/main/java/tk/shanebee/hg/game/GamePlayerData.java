@@ -396,6 +396,7 @@ public class GamePlayerData extends Data {
                             .replace("<player>", player.getName());
                     msgAll(broadcast);
                 }
+
                 kitHelp(player);
                 player.playSound(player.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1f, 1f);
 //                game.getKitManager().setKit(player, game.getKitManager().getKits().get(0));
@@ -417,6 +418,9 @@ public class GamePlayerData extends Data {
                         player.showPlayer(plugin, p);
                     }
                 }
+
+                if (Config.practiceMode)
+                    player.getInventory().setItem(8, plugin.getItemStackManager().getQuitGameItem());
             });
 
             soundAll(Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1f, 1f);
@@ -455,9 +459,6 @@ public class GamePlayerData extends Data {
         playerData.restore(player);
         exit(player, previousLocation);
         playerManager.removePlayerData(player);
-//        if (death) {
-//            player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 5, 1);
-//        }
         game.updateAfterDeath(player, death);
     }
 
@@ -514,6 +515,9 @@ public class GamePlayerData extends Data {
         this.spectators.add(uuid);
         spectator.getInventory().clear();
         spectator.setGameMode(GameMode.SURVIVAL);
+        for (PotionEffect ef : spectator.getActivePotionEffects()) {
+            spectator.removePotionEffect(ef.getType());
+        }
         spectator.setCollidable(false);
         if (Config.spectateFly)
             spectator.setAllowFlight(true);
@@ -535,6 +539,8 @@ public class GamePlayerData extends Data {
         game.getGameBarData().addPlayer(spectator);
         game.gameArenaData.boards.setBoard(spectator);
         spectator.getInventory().setItem(0, plugin.getItemStackManager().getSpectatorCompass());
+        if (Config.practiceMode)
+            spectator.getInventory().setItem(8, plugin.getItemStackManager().getQuitGameItem());
     }
 
     /**

@@ -2,7 +2,6 @@ package tk.shanebee.hg.game;
 
 import fr.mrmicky.fastboard.FastBoard;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
@@ -31,7 +30,6 @@ public class Boards {
     private final PlayerManager playerManager;
     private int boardTickCounter = 0;
 
-    @SuppressWarnings("ConstantConditions")
     public Boards(Game game) {
         this.game = game;
         this.plugin = game.plugin;
@@ -96,7 +94,7 @@ public class Boards {
         // alive
         lines.add(Util.getColString(plugin.getLang().scoreboard_line_1 + game.getGameArenaData().aliveCount));
         // remaining time
-        lines.add(Util.getColString(plugin.getLang().scoreboard_line_2 + game.getGameArenaData().timeLeft));
+        lines.add(Util.getColString(plugin.getLang().scoreboard_line_2.replace("<event>", game.gameArenaData.nextEvent) + game.getGameArenaData().timeLeft));
         lines.add(Util.getColString(plugin.getLang().scoreboard_line_empty + " "));
 
         if (game.getGameArenaData().getStatus() == Status.RUNNING) {
@@ -138,7 +136,7 @@ public class Boards {
             // alive
             board.updateLine(i++, Util.getColString(plugin.getLang().scoreboard_line_1 + game.getGameArenaData().aliveCount));
             // remaining time
-            board.updateLine(i, Util.getColString(plugin.getLang().scoreboard_line_2 + game.getGameArenaData().timeLeft));
+            board.updateLine(i, Util.getColString(plugin.getLang().scoreboard_line_2.replace("<event>", game.gameArenaData.nextEvent) + game.getGameArenaData().timeLeft));
 
             if (game.getGameArenaData().getStatus() != Status.RUNNING)
                 continue;
