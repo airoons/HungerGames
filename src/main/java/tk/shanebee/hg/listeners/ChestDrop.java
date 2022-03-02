@@ -21,6 +21,8 @@ import tk.shanebee.hg.managers.PlayerManager;
 import tk.shanebee.hg.util.Util;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 
@@ -132,10 +134,17 @@ public class ChestDrop implements Listener {
             int c = rg.nextInt(Config.randomChestMaxContent) + 1;
             c = Math.max(c, 2);
 
+            List<Integer> slots = new ArrayList<>();
+            for (int slot = 0; slot <= 26; slot++) {
+                slots.add(slot);
+            }
+            Collections.shuffle(slots);
+
             while (c != 0) {
                 ItemStack it = HG.getPlugin().getManager().randomItem(game,true);
                 if (it != null) {
-                    i.addItem(it);
+                    int slot = slots.remove(0);
+                    i.setItem(slot, it);
                 }
                 c--;
             }

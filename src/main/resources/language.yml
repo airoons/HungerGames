@@ -16,6 +16,14 @@ player-left-game: '&b&l<player> &cHas left the game'
 game-started: '&6&l Arena &c&l<arena> &6&lwill begin in <seconds> seconds!'
 game-join: '&6&l Use:&c&l /hg join <arena>&6&l to join!'
 game-countdown: 'The game will start in <timer> seconds..'
+game-countdown-info: |-
+  &7
+  &e&lHow to get points:
+  &7
+  &6+5p &ffor a kill
+  &6+4p &f(bonus) for killing last member of another team
+  &6+points &ffor placement: #11 +5, #10 to #6 increment by 5, #5 to #1 increment by 10
+  &7
 game-almost-over: '&l&cThe game is almost over, fight to the death!'
 game-ending-minsec: '&aThe game is ending in <minutes> minute(s), and <seconds> second(s)!'
 game-ending-min: '&aThe game is ending in <minutes> minute(s)!'

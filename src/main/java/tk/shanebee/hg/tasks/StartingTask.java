@@ -4,14 +4,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import tk.shanebee.hg.HG;
-import tk.shanebee.hg.data.Config;
 import tk.shanebee.hg.data.Language;
 import tk.shanebee.hg.game.Game;
 import tk.shanebee.hg.game.GameArenaData;
-import tk.shanebee.hg.util.Util;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 public class StartingTask implements Runnable {
@@ -38,9 +34,14 @@ public class StartingTask implements Runnable {
             stop();
             game.startFreeRoam();
             game.startGame();
-        } else if (timer % 10 == 0 || timer <= 5) {
-            game.getGamePlayerData().msgAll(lang.game_countdown.replace("<timer>", "" + timer));
-            game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 1f);
+        } else if (canAnnounceTime(timer)) {
+            if (timer == 60) {
+                game.getGamePlayerData().msgAllPlayers(lang.game_countdown_info, false);
+                game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 1f);
+            } else {
+                game.getGamePlayerData().msgAll(lang.game_countdown.replace("<timer>", "" + timer));
+                game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 1f);
+            }
         }
 
         for (UUID uuid : game.getGamePlayerData().getPlayersAndSpectators()) {
@@ -51,8 +52,24 @@ public class StartingTask implements Runnable {
         }
     }
 
+    private boolean canAnnounceTime(int time) {
+        switch (time) {
+            case 120:
+            case 60:
+            case 30:
+            case 15:
+            case 5:
+            case 4:
+            case 3:
+            case 2:
+            case 1:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     public void stop() {
         Bukkit.getScheduler().cancelTask(id);
     }
-
 }

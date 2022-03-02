@@ -1,5 +1,6 @@
 package tk.shanebee.hg.data;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.Configuration;
@@ -43,6 +44,8 @@ public class Config {
     public static boolean hideNametags;
     public static boolean savePreviousLocation;
     public static int timerInterval;
+    public static String lobbyLocationStr;
+    public static Location lobbyLocation;
 
     //Team info
     public static boolean team_showTeamNames;
@@ -146,6 +149,7 @@ public class Config {
         savePreviousLocation = config.getBoolean("settings.save-previous-location");
         bonusBlockTypes = config.getStringList("settings.bonus-block-types");
         timerInterval = config.getInt("settings.timer-interval");
+        lobbyLocationStr = config.getString("settings.join-location");
 
         // Team
         team_maxTeamSize = config.getInt("team.max-team-size");

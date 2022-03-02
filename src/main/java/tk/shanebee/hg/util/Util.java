@@ -2,13 +2,8 @@ package tk.shanebee.hg.util;
 
 import me.MrGraycat.eGlow.API.Enum.EGlowColor;
 import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Bukkit;
-import org.bukkit.Color;
-import org.bukkit.FireworkEffect;
+import org.bukkit.*;
 import org.bukkit.FireworkEffect.Type;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
@@ -391,5 +386,35 @@ public class Util {
 
     public static ChatColor getChatColorFromGlow(EGlowColor glowColor) {
         return mappedColors.getOrDefault(glowColor, ChatColor.WHITE);
+    }
+
+    public static Location getLocationFromString(String s) {
+        System.out.println("s");
+        if (s == null || s.trim() == "") {
+            return null;
+        }
+
+        final String[] parts = s.split(";");
+
+        if (parts.length >= 4) {
+            World w = Bukkit.getServer().getWorld(parts[0]);
+            if (w == null)
+                return null;
+
+            double x = Double.parseDouble(parts[1]);
+            double y = Double.parseDouble(parts[2]);
+            double z = Double.parseDouble(parts[3]);
+
+            if (parts.length == 4)
+                return new Location(w, x, y, z);
+            if (parts.length != 6)
+                return null;
+
+            float yaw = Float.parseFloat(parts[4]);
+            float pitch = Float.parseFloat(parts[5]);
+            return new Location(w, x, y, z, yaw, pitch);
+        }
+
+        return null;
     }
 }

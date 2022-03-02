@@ -81,14 +81,25 @@ public class GamePointData extends Data {
         return null;
     }
 
+    public ArrayList<String> getAll() {
+        ArrayList<String> result = new ArrayList<>();
+
+        int i = 1;
+
+        for (Map.Entry<Team, Integer> entry : points.entrySet()) {
+            result.add(getTeamPointsFormatted(entry.getKey(), i, entry.getValue(), false));
+            i++;
+        }
+
+        return result;
+    }
+
     public ArrayList<String> getAll(Player player) {
         ArrayList<String> result = new ArrayList<>();
 
         Team playerTeam = game.gameTeamData.getTeamData(player.getUniqueId()).getTeam();
-        int playerPos = getPlace(playerTeam);
 
         int i = 1;
-        int added = 0;
 
         for (Map.Entry<Team, Integer> entry : points.entrySet()) {
             result.add(getTeamPointsFormatted(entry.getKey(), i, entry.getValue(), entry.getKey() == playerTeam));

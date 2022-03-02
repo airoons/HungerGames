@@ -9,7 +9,7 @@ public class TopCmd extends BaseCmd {
     public TopCmd() {
         forcePlayer = true;
         cmdName = "top";
-        forceInGame = false;
+        forceInGame = true;
         argLength = 1;
         permissionDefault = PermissionDefault.TRUE;
     }
@@ -17,12 +17,6 @@ public class TopCmd extends BaseCmd {
     @Override
     public boolean run() {
         Game g = playerManager.getGame(player);
-        if (g == null) {
-            for (Game game : plugin.getGames()) {
-                g = game;
-                break;
-            }
-        }
 
         Util.scm(player, lang.team_points_header);
         if (g == null)

@@ -362,21 +362,25 @@ public class Game {
 
         gamePointData.printDebugLog();
 
+        StringBuilder builder = new StringBuilder("&7 \n");
+        for (String place : gamePointData.getAll()) {
+            builder.append(place).append("\n");
+        }
+        builder.append("\n");
+        gamePlayerData.msgAll(builder.toString(), false);
+
         String winner = Util.translateStop(Util.convertUUIDListToStringList(win));
 
         // Broadcast wins
         String broadcast = lang.player_won.replace("<arena>", gameArenaData.name).replace("<winner>", winner);
-        if (Config.broadcastWinMessages) {
-            String title = Util.getColString(lang.game_over);
-            String subtitle = Util.getColString(broadcast);
-            for (UUID u : gamePlayerData.getPlayersAndSpectators()) {
-                Player p = Bukkit.getPlayer(u);
-                if (p != null)
-                    p.sendTitle(title, subtitle, 5, 100, 5);
-            }
-        } else {
-            gamePlayerData.msgAllPlayers(broadcast);
+        String title = Util.getColString(lang.game_over);
+        String subtitle = Util.getColString(broadcast);
+        for (UUID u : gamePlayerData.getPlayersAndSpectators()) {
+            Player p = Bukkit.getPlayer(u);
+            if (p != null)
+                p.sendTitle(title, subtitle, 5, 100, 5);
         }
+        gamePlayerData.msgAll(broadcast);
         gamePlayerData.soundAll(Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f);
 
         cancelTasks();

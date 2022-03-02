@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import tk.shanebee.hg.Status;
 import tk.shanebee.hg.data.Config;
 import tk.shanebee.hg.data.PlayerData;
+import tk.shanebee.hg.data.TeamData;
 import tk.shanebee.hg.events.PlayerJoinGameEvent;
 import tk.shanebee.hg.events.PlayerLeaveGameEvent;
 import tk.shanebee.hg.game.GameCommandData.CommandType;
@@ -171,6 +172,31 @@ public class GamePlayerData extends Data {
     }
 
     /**
+     * Send a message to all players in the game
+     * <p>Prefix will be included</p>
+     *
+     * @param message Message to send
+     */
+    public void msgAllPlayers(String message) {
+        msgAllPlayers(message, true);
+    }
+
+    /**
+     * Send a message to all players in the game
+     *
+     * @param message Message to send
+     * @param prefix If prefix should be included in message
+     */
+    public void msgAllPlayers(String message, boolean prefix) {
+        String pre = prefix ? lang.prefix : "";
+        for (UUID u : players) {
+            Player p = Bukkit.getPlayer(u);
+            if (p != null)
+                Util.scm(p, pre + message);
+        }
+    }
+
+    /**
      * Send a message to all players/spectators in the game
      * <p>Prefix will be included</p>
      *
@@ -213,23 +239,6 @@ public class GamePlayerData extends Data {
             Player p = Bukkit.getPlayer(u);
             if (p != null)
                 p.playSound(p.getLocation(), sound, volume, pitch);
-        }
-    }
-
-    /**
-     * Sends a message to all players/spectators
-     * <b>Includes players who have died and left the game.
-     * Used for broadcasting win messages</b>
-     *
-     * @param message Message to send
-     */
-    public void msgAllPlayers(String message) {
-        List<UUID> allPlayers = getPlayersAndSpectators();
-
-        for (UUID u : allPlayers) {
-            Player p = Bukkit.getPlayer(u);
-            if (p != null)
-                Util.scm(p, lang.prefix + message);
         }
     }
 
@@ -321,9 +330,10 @@ public class GamePlayerData extends Data {
         GameArenaData gameArenaData = game.getGameArenaData();
         Status status = gameArenaData.getStatus();
         if (status != Status.WAITING && status != Status.STOPPED && status != Status.COUNTDOWN && status != Status.READY) {
-            Util.scm(player, lang.arena_not_ready);
             if ((status == Status.RUNNING || status == Status.BEGINNING) && Config.spectateEnabled) {
-                Util.scm(player, lang.arena_spectate.replace("<arena>", game.gameArenaData.getName()));
+                game.gamePlayerData.spectate(player, true);
+            } else {
+                Util.scm(player, lang.arena_not_ready);
             }
         } else if (gameArenaData.maxPlayers <= players.size()) {
             Util.scm(player, "&c" + gameArenaData.getName() + " " + lang.game_full);
@@ -460,6 +470,10 @@ public class GamePlayerData extends Data {
         exit(player, previousLocation);
         playerManager.removePlayerData(player);
         game.updateAfterDeath(player, death);
+
+        TeamData td = game.getGameTeamData().getTeamData(player.getUniqueId());
+        if (td.isOnTeam(player.getUniqueId()))
+            td.getTeam().leave(player, game, true, false);
     }
 
     void exit(Player player, @Nullable Location exitLocation) {

@@ -26,6 +26,7 @@ public class Language {
     public String game_started;
     public String game_join;
     public String game_countdown;
+    public String game_countdown_info;
     public String game_almost_over;
     public String game_ending_minsec;
     public String game_ending_min;
@@ -293,6 +294,7 @@ public class Language {
         game_started = lang.getString("game-started");
         game_join = lang.getString("game-join");
         game_countdown = lang.getString("game-countdown");
+        game_countdown_info = lang.getString("game-countdown-info");
         game_almost_over = lang.getString("game-almost-over");
         game_ending_minsec = lang.getString("game-ending-minsec");
         game_ending_min = lang.getString("game-ending-min");

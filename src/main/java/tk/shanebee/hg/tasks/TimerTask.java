@@ -95,24 +95,6 @@ public class TimerTask implements Runnable {
 					game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BIT, 1f, 1f);
 				}
 			}
-
-//			int minutes = this.remainingtime / 60;
-//			int asd = this.remainingtime % 60;
-//			if (minutes != 0) {
-//				if (asd == 0) {
-//					if (end_min.length() < 1) return;
-//					game.getGamePlayerData().msgAll(end_min.replace("<minutes>", "" + minutes));
-//					game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BANJO, 1f, 1f);
-//				} else {
-//					if (end_minsec.length() < 1) return;
-//					game.getGamePlayerData().msgAll(end_minsec.replace("<minutes>", "" + minutes).replace("<seconds>", "" + asd));
-//					game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BANJO, 1f, 1f);
-//				}
-//			} else {
-//				if (end_sec.length() < 1) return;
-//				game.getGamePlayerData().msgAll(end_sec.replace("<seconds>", "" + this.remainingtime));
-//				game.getGamePlayerData().soundAll(Sound.BLOCK_NOTE_BLOCK_BANJO, 1f, 1f);
-//			}
 		}
 		remainingtime = remainingtime - timerInterval;
 
@@ -127,20 +109,6 @@ public class TimerTask implements Runnable {
 		}
 
 		game.getGameArenaData().setTimeLeft(remainTime);
-	}
-
-	private boolean canAnnounceTime(int time) {
-		switch (time) {
-			case 300:
-			case 180:
-			case 60:
-			case 30:
-			case 15:
-			case 5:
-				return true;
-			default:
-				return false;
-		}
 	}
 
 	public int getRemainingtime() {

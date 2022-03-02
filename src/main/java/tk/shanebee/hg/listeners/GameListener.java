@@ -55,6 +55,7 @@ import tk.shanebee.hg.util.Vault;
 
 import java.util.Collections;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Internal event listener
@@ -124,39 +125,39 @@ public class GameListener implements Listener {
 		}
 	}
 
-	@EventHandler(priority = EventPriority.HIGHEST)
-	private void onAttack(EntityDamageByEntityEvent event) {
-		Entity defender = event.getEntity();
-		Entity damager = event.getDamager();
-
-		if (damager instanceof Player) {
-			if (playerManager.hasSpectatorData(((Player) damager))) {
-				event.setCancelled(true);
-				return;
-			}
-		}
-		if (defender instanceof Player) {
-			Player player = (Player) defender;
-			PlayerData playerData = playerManager.getPlayerData(player);
-
-			if (playerData != null) {
-				Game game = playerData.getGame();
-
-				if (game.getGameArenaData().getStatus() != Status.RUNNING || game.gracePeriod) {
-					event.setCancelled(true);
-				} else if (event.getFinalDamage() >= player.getHealth()) {
-					if (hasTotem(player)) return;
-					event.setCancelled(true);
-					processDeath(player, game, damager, event.getCause());
-				}
-			}
-		}
-
-		// Stop players from removing items from item frames
-		if (defender instanceof Hanging) {
-            handleItemFrame((Hanging) event.getEntity(), event, !Config.itemframe_take);
-        }
-	}
+//	@EventHandler(priority = EventPriority.HIGHEST)
+//	private void onAttack(EntityDamageByEntityEvent event) {
+//		Entity defender = event.getEntity();
+//		Entity damager = event.getDamager();
+//
+//		if (damager instanceof Player) {
+//			if (playerManager.hasSpectatorData(((Player) damager))) {
+//				event.setCancelled(true);
+//				return;
+//			}
+//		}
+//		if (defender instanceof Player) {
+//			Player player = (Player) defender;
+//			PlayerData playerData = playerManager.getPlayerData(player);
+//
+//			if (playerData != null) {
+//				Game game = playerData.getGame();
+//
+//				if (game.getGameArenaData().getStatus() != Status.RUNNING || game.gracePeriod) {
+//					event.setCancelled(true);
+//				} else if (event.getFinalDamage() >= player.getHealth()) {
+//					if (hasTotem(player)) return;
+//					event.setCancelled(true);
+//					processDeath(player, game, damager, event.getCause());
+//				}
+//			}
+//		}
+//
+//		// Stop players from removing items from item frames
+//		if (defender instanceof Hanging) {
+//            handleItemFrame((Hanging) event.getEntity(), event, !Config.itemframe_take);
+//        }
+//	}
 
 	@EventHandler // Prevent players breaking item frames
     private void onBreakItemFrame(HangingBreakByEntityEvent event) {
@@ -192,6 +193,10 @@ public class GameListener implements Listener {
 				Game game = playerManager.getGame(player);
 				if (game == null)
 					return;
+				if (game.getGameArenaData().getStatus() != Status.RUNNING || game.gracePeriod) {
+					event.setCancelled(true);
+					return;
+				}
 				Team team = game.getGameTeamData().getTeamData(player.getUniqueId()).getTeam();
 				if (team == null)
 					return;
@@ -200,12 +205,16 @@ public class GameListener implements Listener {
 					event.setCancelled(true);
 				}
 
+				if (event.getFinalDamage() >= player.getHealth()) {
+					event.setCancelled(true);
+					processDeath(player, game, ((EntityDamageByEntityEvent) event).getDamager(), event.getCause());
+				}
+
 				return;
 			}
 			PlayerData pd = playerManager.getPlayerData(player);
 			if (pd != null) {
 				if (event.getFinalDamage() >= player.getHealth()) {
-
 					if (hasTotem(player)) return;
 					event.setCancelled(true);
 
@@ -234,36 +243,8 @@ public class GameListener implements Listener {
 
 			Team team = game.getGameTeamData().getTeamData(player.getUniqueId()).getTeam();
 
-			if (damager instanceof Player) {
-				gamePlayerData.addKill(((Player) damager));
-				leaderboard.addStat(((Player) damager), Leaderboard.Stats.KILLS);
-
-				Team damTeam = game.getGameTeamData().getTeamData(damager.getUniqueId()).getTeam();
-				if (damTeam != null) {
-					game.getGamePointData().addGamePoints(damTeam, (game.getGamePointData().hasKilledBefore(damTeam, team)) ? PointType.TEAM_KILL : PointType.TEAM_KILL);
-				}
-
-				deathString = killManager.getKillString(player, damager, game);
-			} else if (cause == DamageCause.ENTITY_ATTACK) {
-				deathString = killManager.getKillString(player, damager, game);
-			} else if (cause == DamageCause.PROJECTILE) {
-				deathString = killManager.getKillString(player, damager, game);
-				if (killManager.isShotByPlayer(damager) && killManager.getShooter(damager) != player) {
-					gamePlayerData.addKill(killManager.getShooter(damager));
-                    leaderboard.addStat(killManager.getShooter(damager), Leaderboard.Stats.KILLS);
-
-					Team damTeam = game.getGameTeamData().getTeamData(killManager.getShooter(damager).getUniqueId()).getTeam();
-					if (damTeam != null) {
-						game.getGamePointData().addGamePoints(damTeam, (game.getGamePointData().hasKilledBefore(damTeam, team)) ? PointType.TEAM_KILL : PointType.TEAM_KILL);
-					}
-                }
-			} else {
-				deathString = killManager.getDeathString(cause, player.getName());
-			}
-
+			boolean alive = false;
 			if (team != null) {
-				boolean alive = false;
-
 				for (UUID uuid : team.getPlayers()) {
 					if (uuid != player.getUniqueId() && playerManager.hasPlayerData(uuid)) {
 						alive = true;
@@ -282,6 +263,33 @@ public class GameListener implements Listener {
 					game.getGamePointData().setPlacement(teamsAlive);
 					game.getGamePointData().addGamePoints(team, PointType.PLACEMENT);
 				}
+			}
+
+			if (damager instanceof Player) {
+				gamePlayerData.addKill(((Player) damager));
+				leaderboard.addStat(((Player) damager), Leaderboard.Stats.KILLS);
+
+				Team damTeam = game.getGameTeamData().getTeamData(damager.getUniqueId()).getTeam();
+				if (damTeam != null) {
+					game.getGamePointData().addGamePoints(damTeam, alive ? PointType.KILL : PointType.TEAM_KILL);
+				}
+
+				deathString = killManager.getKillString(player, damager, game);
+			} else if (cause == DamageCause.ENTITY_ATTACK) {
+				deathString = killManager.getKillString(player, damager, game);
+			} else if (cause == DamageCause.PROJECTILE) {
+				deathString = killManager.getKillString(player, damager, game);
+				if (killManager.isShotByPlayer(damager) && killManager.getShooter(damager) != player) {
+					gamePlayerData.addKill(killManager.getShooter(damager));
+                    leaderboard.addStat(killManager.getShooter(damager), Leaderboard.Stats.KILLS);
+
+					Team damTeam = game.getGameTeamData().getTeamData(killManager.getShooter(damager).getUniqueId()).getTeam();
+					if (damTeam != null) {
+						game.getGamePointData().addGamePoints(damTeam, alive ? PointType.KILL : PointType.TEAM_KILL);
+					}
+                }
+			} else {
+				deathString = killManager.getDeathString(cause, player.getName());
 			}
 
 			// Send death message to all players in game
@@ -798,11 +806,14 @@ public class GameListener implements Listener {
 			}
 		}
 
-		Location worldSpawn = Bukkit.getWorlds().get(0).getSpawnLocation();
+		if (Config.lobbyLocation == null)
+			Config.lobbyLocation = Util.getLocationFromString(Config.lobbyLocationStr);
+
+		Location spawn = Config.lobbyLocation;
 		player.getInventory().clear();
 		player.setLevel(0);
 		player.setExp(0f);
-		PaperLib.teleportAsync(player, worldSpawn).thenAccept(a -> {
+		PaperLib.teleportAsync(player, spawn).thenAccept(a -> {
 			EGlowAPI eGlowAPI = EGlow.getAPI();
 			IEGlowPlayer ePlayer = eGlowAPI.getEGlowPlayer(player);
 			EGlow.getAPI().disableGlow(ePlayer);
@@ -894,63 +905,60 @@ public class GameListener implements Listener {
 
 	@EventHandler
 	private void onChat(AsyncPlayerChatEvent event) {
-		boolean isTeam = false;
-		boolean isInGame = false;
-		boolean isSpectator = false;
+		String prefix = "&7";
+		Player player = event.getPlayer();
 
-		event.getRecipients().clear();
+		boolean isPublic = event.getMessage().startsWith("@");
 
-		Team team = null;
-		if (playerManager.getGame(event.getPlayer()) != null) {
+		Game game = playerManager.getGame(event.getPlayer());
+		if (game != null) {
 			TeamData td = playerManager.getGame(event.getPlayer()).getGameTeamData().getTeamData(event.getPlayer().getUniqueId());
+			Team team = null;
 			if (td.isOnTeam(event.getPlayer().getUniqueId()))
 				team = td.getTeam();
 
-			if (playerManager.hasPlayerData(event.getPlayer())) {
-				for (UUID uuid : playerManager.getGame(event.getPlayer()).getGamePlayerData().getPlayers()) {
-					Player player = Bukkit.getPlayer(uuid);
-					event.getRecipients().add(player);
+			if (team != null) {
+				prefix = Util.getColString("&8[" + team.getChatColor() + (!isPublic ? "Kom. čats" : Placeholders.getTeamPrefixFormatted(event.getPlayer()).charAt(0)) + "&8] &7");
+
+				if (!isPublic) {
+					event.getRecipients().clear();
+					for (UUID uuid : team.getPlayers()) {
+						Player p = Bukkit.getPlayer(uuid);
+						if (p != null)
+							event.getRecipients().add(p);
+					}
+				} else if (event.getMessage().length() > 1) {
+					event.setMessage(event.getMessage().substring(1));
+					event.getRecipients().clear();
+					if (!playerManager.hasSpectatorData(player)) {
+						prefix = Placeholders.getTeamPrefixFormatted(event.getPlayer());
+						event.getRecipients().addAll(Bukkit.getOnlinePlayers().stream().filter(p -> p.getWorld().equals(player.getWorld())).collect(Collectors.toList()));
+					}
 				}
 			}
 
-			isInGame = true;
-		}
-
-		if (event.getMessage().startsWith("!") && team != null) {
-			event.setMessage(event.getMessage().substring(1));
-
-			for (UUID uuid : team.getPlayers()) {
-				Player p = Bukkit.getPlayer(uuid);
-				if (p != null)
-					event.getRecipients().add(p);
-			}
-
-			isTeam = true;
-		} else {
-			Player spectator = event.getPlayer();
-			if (playerManager.hasSpectatorData(spectator)) {
-				for (UUID uuid : playerManager.getSpectatorData(spectator).getGame().getGamePlayerData().getSpectators()) {
-					Player player = Bukkit.getPlayer(uuid);
-					event.getRecipients().add(player);
+			if (playerManager.hasSpectatorData(player)) {
+				event.getRecipients().clear();
+				prefix = Util.getColString("&8[&fVēro&8] &f");
+				for (UUID uuid : game.getGamePlayerData().getSpectators()) {
+					Player p = Bukkit.getPlayer(uuid);
+					if (p != null)
+						event.getRecipients().add(p);
 				}
-				isSpectator = true;
 			}
-		}
-
-		for (Player player : Bukkit.getOnlinePlayers()) {
-			if (player.hasPermission("suhc.seeallchat"))
-				event.getRecipients().add(player);
-			else if (!isInGame && player.getWorld() == event.getPlayer().getWorld())
-				event.getRecipients().add(player);
-		}
-
-		if (event.getPlayer().hasPermission("hg.sendallchat")) {
-			for (Player player : Bukkit.getOnlinePlayers()) {
-				event.getRecipients().add(player);
-			}
-			event.setFormat(Util.getColString("&8[&cAdmin&8] ") + Util.getColString((isTeam ? lang.team_prefix : "") + (isSpectator ? "&8[&f" + lang.spectators + "&8] " : "") + Placeholders.getTeamPrefixFormatted(event.getPlayer()) + event.getPlayer().getName() + " &8» &f%2$s"));
 		} else {
-			event.setFormat(Util.getColString((isTeam ? lang.team_prefix : "") + (isSpectator ? "&8[&f" + lang.spectators + "&8] " : "") + Placeholders.getTeamPrefixFormatted(event.getPlayer()) + event.getPlayer().getName() + " &8» &f%2$s"));
+			event.getRecipients().clear();
+			event.getRecipients().addAll(Bukkit.getOnlinePlayers().stream().filter(p -> p.getWorld().equals(player.getWorld())).collect(Collectors.toList()));
+		}
+
+		event.setFormat(Util.getColString(prefix + player.getName() + " &8» &f%2$s"));
+		for (Player p : Bukkit.getOnlinePlayers()) {
+			if (p.hasPermission("hg.chat.all") && !event.getRecipients().contains(p)) {
+				if (game != null)
+					p.sendMessage(Util.getColString("&f" + game.getGameArenaData().getName() + "&8 - ") + event.getFormat().replace("%2$s", event.getMessage()));
+				else
+					p.sendMessage(Util.getColString("&7Lobijs &8 - ") + event.getFormat().replace("%2$s", event.getMessage()));
+			}
 		}
 	}
 
