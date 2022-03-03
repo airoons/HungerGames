@@ -29,8 +29,10 @@ public class GameArenaData extends Data {
     String aliveCount;
     String timeLeft;
     String nextEvent;
+    String customName;
+    String author;
 
-    public GameArenaData(Game game, String name, Bound bound, int timer, int minPlayers, int maxPlayers, int countDownTime, int roamTime, int cost) {
+    public GameArenaData(Game game, String name, Bound bound, int timer, int minPlayers, int maxPlayers, int countDownTime, int roamTime, int cost, String customName, String author) {
         super(game);
         this.name = name;
         this.bound = bound;
@@ -46,6 +48,8 @@ public class GameArenaData extends Data {
         this.aliveCount = "0/0";
         this.timeLeft = "00:00";
         this.nextEvent = getPlugin().getLang().scoreboard_stage_grace;
+        this.customName = customName;
+        this.author = author;
     }
 
     /**
@@ -254,5 +258,21 @@ public class GameArenaData extends Data {
 
     public void setNextEvent(String nextEvent) {
         this.nextEvent = nextEvent;
+    }
+
+    public String getCustomName() {
+        return customName;
+    }
+
+    public void setCustomName(String customName) {
+        this.customName = customName;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
     }
 }

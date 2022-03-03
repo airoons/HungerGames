@@ -98,11 +98,10 @@ public class GamePlayerData extends Data {
         // Clear the chat a little bit, making this message easier to see
         for (int i = 0; i < 20; ++i)
             Util.scm(player, " ");
-        String kit = game.kitManager.getKitListString();
         Util.scm(player, lang.kit_join_header);
         if (player.hasPermission("hg.kit") && game.kitManager.hasKits()) {
             Util.scm(player, lang.kit_join_msg);
-            Util.scm(player, lang.kit_join_avail);
+            Util.scm(player, lang.kit_join_avail.replace("<arena-name>", game.gameArenaData.customName).replace( "<author>", game.gameArenaData.author));
         }
         Util.scm(player, lang.kit_join_footer);
     }

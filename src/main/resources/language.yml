@@ -61,7 +61,7 @@ spectator-gui-title: 'Spectate'
 #  KIT MESSAGES
 kit-join-header: '&c&l>&7&l----------[&f&lWelcome to Hunger&f&lGames&7&l]&7&l----------&c&l<'
 kit-join-message: '&7&l           - &3Pick a kit using &b/hg kit'
-kit-join-available: '&3&l  Available Kits:&b'
+kit-join-available: '&3&l  Available Kits:&b, arena name: <arena-name>, author: <author>'
 kit-join-footer: '&c&l>&7&l------------------------------------------&c&l<'
 kit-no-perm: '&cYou do not have permission to use this kit!'
 kit-doesnt-exist: '&cDoes not exist'

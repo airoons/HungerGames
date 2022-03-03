@@ -120,6 +120,8 @@ public class ArenaConfig {
 					int maxplayers = 0;
 					Bound bound = null;
 					List<String> commands;
+					String customName = "Arena";
+					String author = "Author";
 
 					String path = "arenas." + arenaName;
 					try {
@@ -262,6 +264,17 @@ public class ArenaConfig {
                                 arenaName, world.getName());
 						Util.debug(exception);
 					}
+
+					if (arenadat.isSet(path + ".custom-name")) {
+						customName = arenadat.getString(path + ".custom-name");
+					}
+					gameArenaData.setCustomName(customName);
+
+					if (arenadat.isSet(path + ".author")) {
+						author = arenadat.getString(path + ".author");
+					}
+					gameArenaData.setAuthor(author);
+
 					Util.log("Arena &b" + arenaName + "&7 has been &aloaded!");
 					game.resetRandomChests();
 

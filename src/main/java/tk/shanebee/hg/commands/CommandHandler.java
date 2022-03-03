@@ -64,6 +64,8 @@ public class CommandHandler {
         registerCommand(SoundTestCmd.class);
         registerCommand(TeamCmd.class);
         registerCommand(TopCmd.class);
+        registerCommand(SetName.class);
+        registerCommand(SetAuthor.class);
 
         if (Config.spectateEnabled) {
             registerCommand(SpectateCmd.class);

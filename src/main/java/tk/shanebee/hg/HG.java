@@ -147,6 +147,7 @@ public class HG extends JavaPlugin {
 		pluginManager.registerEvents(new CancelListener(this), this);
 		pluginManager.registerEvents(new GameListener(this), this);
 		pluginManager.registerEvents(new CommandSendListener(), this);
+		pluginManager.registerEvents(new OtherListeners(this), this);
 
 		if (this.getDescription().getVersion().contains("Beta")) {
 			Util.log("&eYOU ARE RUNNING A BETA VERSION, please use with caution");

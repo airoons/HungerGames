@@ -389,7 +389,6 @@ public class Util {
     }
 
     public static Location getLocationFromString(String s) {
-        System.out.println("s");
         if (s == null || s.trim() == "") {
             return null;
         }

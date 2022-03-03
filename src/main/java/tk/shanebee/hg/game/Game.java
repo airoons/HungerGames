@@ -117,7 +117,7 @@ public class Game {
      */
     public Game(String name, Bound bound, int timer, int minPlayers, int maxPlayers, int countDownTime, int roam, int cost) {
         this.plugin = HG.getPlugin();
-        this.gameArenaData = new GameArenaData(this, name, bound, timer, minPlayers, maxPlayers, countDownTime, roam, cost);
+        this.gameArenaData = new GameArenaData(this, name, bound, timer, minPlayers, maxPlayers, countDownTime, roam, cost, "Arena", "Author");
         this.gameArenaData.status = Status.NOTREADY;
         this.playerManager = HG.getPlugin().getPlayerManager();
         this.lang = plugin.getLang();
