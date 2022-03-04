@@ -3,6 +3,7 @@ package tk.shanebee.hg.tasks;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityRegainHealthEvent;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.data.Language;
 import tk.shanebee.hg.game.Game;
@@ -33,6 +34,7 @@ public class FreeRoamTask implements Runnable {
                     Util.scm(player, roamTimeString);
                 }
                 player.setHealth(20);
+                Bukkit.getPluginManager().callEvent(new EntityRegainHealthEvent(player, 0, EntityRegainHealthEvent.RegainReason.CUSTOM));
                 player.setFoodLevel(20);
                 game.getGamePlayerData().unFreeze(player);
                 player.playSound(player.getLocation(), Sound.BLOCK_END_PORTAL_SPAWN, 1f, 1f);

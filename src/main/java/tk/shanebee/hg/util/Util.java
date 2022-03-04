@@ -292,7 +292,7 @@ public class Util {
 
     @SuppressWarnings("deprecation")
     public static boolean isAttached(Block base, Block attached) {
-        if (attached.getType() == Material.AIR) return false;
+        if (attached.getType() == Material.AIR || base == null) return false;
 
         MaterialData bs = attached.getState().getData();
         //BlockData bs = attached.getBlockData();

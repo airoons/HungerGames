@@ -235,6 +235,7 @@ public class Language {
     public String team_points_list;
 
     public String quit_game_item;
+    public String chat_tip;
 
     public Map<EGlowColor, String> team_colors = new HashMap<>();
 
@@ -515,6 +516,7 @@ public class Language {
         team_points_list = lang.getString("team-points-list");
 
         quit_game_item = lang.getString("quit-game-item");
+        chat_tip = lang.getString("chat-tip");
 
         List<EGlowColor> colors = new ArrayList<>(Arrays.asList(EGlowColor.GREEN, EGlowColor.DARK_GREEN, EGlowColor.YELLOW, EGlowColor.GOLD, EGlowColor.WHITE, EGlowColor.DARK_GRAY, EGlowColor.PINK, EGlowColor.PURPLE, EGlowColor.RED, EGlowColor.AQUA, EGlowColor.DARK_BLUE, EGlowColor.DARK_AQUA));
         for (EGlowColor color : colors) {

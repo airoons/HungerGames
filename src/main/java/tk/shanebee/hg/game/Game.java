@@ -486,12 +486,13 @@ public class Game {
                 gameTeamData.resetTeams();
 
             gameArenaData.setNextEvent(lang.scoreboard_stage_grace);
+            gamePlayerData.clearData();
         }, 200);
     }
 
     void updateAfterDeath(Player player, boolean death) {
         Status status = gameArenaData.status;
-        if (status == Status.RUNNING || status == Status.BEGINNING || status == Status.COUNTDOWN) {
+        if (status == Status.RUNNING || status == Status.BEGINNING) {
             if (isGameOver()) {
                 if (!death) {
                     for (UUID uuid : gamePlayerData.players) {
@@ -512,7 +513,7 @@ public class Game {
                 }
 
             }
-        } else if (status == Status.WAITING) {
+        } else if (status == Status.WAITING || status == Status.COUNTDOWN) {
             gamePlayerData.msgAll(lang.player_left_game
                     .replace("<arena>", gameArenaData.getName())
                     .replace("<player>", player.getName()));

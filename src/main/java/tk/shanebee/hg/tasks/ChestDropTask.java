@@ -32,7 +32,7 @@ public class ChestDropTask implements Runnable {
     }
 
     public void run() {
-        if (game.getTimer().getRemainingtime() < 100)
+        if (game.getTimer().getStatus() == TimerStatus.GAS && game.getTimer().getRemainingtime() < 100)
             return;
 
         Bound bound = game.getGameArenaData().getBound();
@@ -45,7 +45,7 @@ public class ChestDropTask implements Runnable {
 
         Block block = w.getBlockAt(x, y, z);
 
-        while (!block.isSolid() && !canLandAt(block)) {
+        while (!block.isSolid() || !canLandAt(block) || !barrierCheck(block.getLocation())) {
             y--;
 
             block = w.getBlockAt(x, y, z);
@@ -189,6 +189,11 @@ public class ChestDropTask implements Runnable {
         }
 
         return false;
+    }
+
+    private boolean barrierCheck(Location loc) {
+        loc.setY(0);
+        return loc.getBlock().getType() == Material.BARRIER;
     }
 
     public void shutdown() {

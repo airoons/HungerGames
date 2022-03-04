@@ -48,12 +48,12 @@ import tk.shanebee.hg.managers.KillManager;
 import tk.shanebee.hg.managers.Manager;
 import tk.shanebee.hg.managers.Placeholders;
 import tk.shanebee.hg.managers.PlayerManager;
-import tk.shanebee.hg.tasks.ChestDropTask;
 import tk.shanebee.hg.util.BlockUtils;
 import tk.shanebee.hg.util.Util;
-import tk.shanebee.hg.util.Vault;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -201,8 +201,10 @@ public class GameListener implements Listener {
 				if (team == null)
 					return;
 
-				if (team == game.getGameTeamData().getTeamData( ((EntityDamageByEntityEvent) event).getDamager().getUniqueId() ).getTeam()) {
+				UUID attacker = ((EntityDamageByEntityEvent) event).getDamager().getUniqueId();
+				if (playerManager.hasSpectatorData(attacker) || team == game.getGameTeamData().getTeamData( attacker ).getTeam()) {
 					event.setCancelled(true);
+					return;
 				}
 
 				if (event.getFinalDamage() >= player.getHealth()) {
@@ -237,6 +239,7 @@ public class GameListener implements Listener {
 	private void processDeath(Player player, Game game, Entity damager, EntityDamageEvent.DamageCause cause) {
 		dropInv(player);
 		player.setHealth(20);
+		Bukkit.getPluginManager().callEvent(new EntityRegainHealthEvent(player, 0, EntityRegainHealthEvent.RegainReason.CUSTOM));
 		Bukkit.getScheduler().runTaskLater(plugin, () -> {
 			GamePlayerData gamePlayerData = game.getGamePlayerData();
 			String deathString;
@@ -813,11 +816,21 @@ public class GameListener implements Listener {
 		player.getInventory().clear();
 		player.setLevel(0);
 		player.setExp(0f);
+		player.setFoodLevel(20);
 		PaperLib.teleportAsync(player, spawn).thenAccept(a -> {
 			EGlowAPI eGlowAPI = EGlow.getAPI();
 			IEGlowPlayer ePlayer = eGlowAPI.getEGlowPlayer(player);
 			EGlow.getAPI().disableGlow(ePlayer);
 			EGlow.getAPI().resetCustomGlowReceivers(ePlayer);
+
+			for (Player p : Bukkit.getOnlinePlayers()) {
+				Game game = playerManager.getGame(p);
+
+				if (game != null) {
+					p.hidePlayer(plugin, player);
+					player.hidePlayer(plugin, p);
+				}
+			}
 		});
 
 //		event.setJoinMessage(Util.getColString("&a+ &7" + event.getPlayer().getName()));
@@ -826,6 +839,7 @@ public class GameListener implements Listener {
 
 	@EventHandler
 	private void onLogout(PlayerQuitEvent event) {
+		event.setQuitMessage("");
 		Player player = event.getPlayer();
 		Game game = null;
 
@@ -887,7 +901,6 @@ public class GameListener implements Listener {
 			}
 		}
 
-		event.setQuitMessage("");
 //		event.setQuitMessage(Util.getColString("&c- &7" + event.getPlayer().getName()));
 	}
 
@@ -902,6 +915,8 @@ public class GameListener implements Listener {
 		    event.getProjectile().setMetadata("shooter", new FixedMetadataValue(plugin, entity.getName()));
         }
 	}
+
+	private List<UUID> tipReceived = new ArrayList<>();
 
 	@EventHandler
 	private void onChat(AsyncPlayerChatEvent event) {
@@ -934,6 +949,9 @@ public class GameListener implements Listener {
 						prefix = Placeholders.getTeamPrefixFormatted(event.getPlayer());
 						event.getRecipients().addAll(Bukkit.getOnlinePlayers().stream().filter(p -> p.getWorld().equals(player.getWorld())).collect(Collectors.toList()));
 					}
+				} else {
+					event.setCancelled(true);
+					return;
 				}
 			}
 
@@ -959,6 +977,12 @@ public class GameListener implements Listener {
 				else
 					p.sendMessage(Util.getColString("&7Lobijs &8 - ") + event.getFormat().replace("%2$s", event.getMessage()));
 			}
+		}
+
+		if (game != null && !isPublic && !tipReceived.contains(player.getUniqueId())) {
+			Util.scm(player, lang.chat_tip);
+			player.playSound(player.getLocation(), Sound.ENTITY_CHICKEN_EGG, 1, 1);
+			tipReceived.add(player.getUniqueId());
 		}
 	}
 

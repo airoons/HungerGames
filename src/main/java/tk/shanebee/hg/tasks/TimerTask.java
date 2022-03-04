@@ -65,6 +65,7 @@ public class TimerTask implements Runnable {
 				int closingIn = borderCountdownEnd;
 				game.getGameBorderData().setBorder(closingIn);
 				game.getGamePlayerData().msgAll(lang.game_border_closing.replace("<seconds>", String.valueOf(closingIn)));
+				game.getGamePlayerData().soundAll(Sound.ENTITY_ENDER_DRAGON_FLAP, 1f, 1f);
 			} else if (this.status == TimerStatus.REFILL) {
 				this.remainingtime = Config.gasStartTime;
 				this.status = TimerStatus.GAS;
@@ -119,4 +120,7 @@ public class TimerTask implements Runnable {
 		Bukkit.getScheduler().cancelTask(id);
 	}
 
+	public TimerStatus getStatus() {
+		return status;
+	}
 }
