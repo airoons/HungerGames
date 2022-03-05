@@ -25,6 +25,7 @@ public class ChestDropTask implements Runnable {
     private final Game game;
     private final int timerID;
     private final List<ChestDrop> chests = new ArrayList<>();
+    private ChestDrop latestDrop = null;
 
     public ChestDropTask(Game game) {
         this.game = game;
@@ -65,7 +66,8 @@ public class ChestDropTask implements Runnable {
                 .replace("<y>", String.valueOf(y))
                 .replace("<z>", String.valueOf(z));
 
-        Location l = w.getBlockAt(x, y, z).getLocation();
+        Location original = w.getBlockAt(x, y, z).getLocation();
+        Location l = original.clone();
         l.add(0.5, 65, 0.5);
 
         for (UUID u : game.getGamePlayerData().getPlayersAndSpectators()) {
@@ -135,8 +137,9 @@ public class ChestDropTask implements Runnable {
         lLeash2.setLeashHolder(lLeash1);
         passengers.add(lLeash2);
 
-        ChestDrop chestDrop = new ChestDrop(chicken, passengers);
+        ChestDrop chestDrop = new ChestDrop(original, chicken, passengers);
         chests.add(chestDrop);
+        latestDrop = chestDrop;
         game.getGamePlayerData().soundAll(Sound.ENTITY_BAT_TAKEOFF, 1f, 1f);
 
         new BukkitRunnable() {
@@ -205,5 +208,9 @@ public class ChestDropTask implements Runnable {
 
     public List<ChestDrop> getChests() {
         return chests;
+    }
+
+    public ChestDrop getLatestDrop() {
+        return latestDrop;
     }
 }

@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.game.Game;
+import tk.shanebee.hg.managers.Placeholders;
 import tk.shanebee.hg.util.Util;
 
 import java.util.Arrays;
@@ -68,7 +69,7 @@ public class SpectatorGUI implements InventoryProvider {
         SkullMeta meta = ((SkullMeta) head.getItemMeta());
         assert meta != null;
         meta.setOwningPlayer(player);
-        meta.setDisplayName(player.getName());
+        meta.setDisplayName(Placeholders.getTeamPrefixFormatted((Player) player) + Placeholders.getTeamColor((Player) player) + player.getName());
         String[] lore = Util.getColString(HG.getPlugin().getLang().spectator_compass_head_lore).split(";");
         meta.setLore(Arrays.asList(lore));
         head.setItemMeta(meta);

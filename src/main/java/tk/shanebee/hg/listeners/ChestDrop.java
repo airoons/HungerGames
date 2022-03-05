@@ -31,6 +31,7 @@ import java.util.Random;
  */
 public class ChestDrop implements Listener {
 
+    private Location original;
     private Chicken chicken;
     private ArrayList<Entity> passengers;
     private BlockState beforeBlock;
@@ -39,7 +40,8 @@ public class ChestDrop implements Listener {
     private PlayerManager playerManager;
     private boolean chestOpened = false;
 
-    public ChestDrop(Chicken chicken, ArrayList<Entity> passengers) {
+    public ChestDrop(Location original, Chicken chicken, ArrayList<Entity> passengers) {
+        this.original = original;
         this.chicken = chicken;
         this.passengers = passengers;
         this.c = chicken.getLocation().getChunk();
@@ -82,6 +84,7 @@ public class ChestDrop implements Listener {
 
         beforeBlock = chicken.getLocation().getBlock().getState();
         Location l = beforeBlock.getLocation();
+        original = l;
         Util.shootFirework(new Location(l.getWorld(), l.getX() + 0.5, l.getY(), l.getZ() + 0.5));
         beforeBlock.getBlock().setType(Material.ENDER_CHEST);
 
@@ -157,5 +160,9 @@ public class ChestDrop implements Listener {
 
     public BlockState getBeforeBlock() {
         return beforeBlock;
+    }
+
+    public Location getOriginal() {
+        return original;
     }
 }

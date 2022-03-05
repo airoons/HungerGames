@@ -189,6 +189,9 @@ public class GameListener implements Listener {
 				player.setFireTicks(0);
 				return;
 			}
+			if (event.getCause() == DamageCause.BLOCK_EXPLOSION || event.getCause() == DamageCause.ENTITY_EXPLOSION) {
+				event.setDamage(event.getDamage() * Config.explosionMultiplier);
+			}
 			if (event instanceof EntityDamageByEntityEvent) {
 				Game game = playerManager.getGame(player);
 				if (game == null)
@@ -201,7 +204,12 @@ public class GameListener implements Listener {
 				if (team == null)
 					return;
 
-				UUID attacker = ((EntityDamageByEntityEvent) event).getDamager().getUniqueId();
+				UUID attacker;
+				if (event.getCause() == DamageCause.PROJECTILE && ((Projectile) ((EntityDamageByEntityEvent) event).getDamager()).getShooter() != null) {
+					attacker = ((Entity) ((Projectile) ((EntityDamageByEntityEvent) event).getDamager()).getShooter()).getUniqueId();
+				} else {
+					attacker = ((EntityDamageByEntityEvent) event).getDamager().getUniqueId();
+				}
 				if (playerManager.hasSpectatorData(attacker) || team == game.getGameTeamData().getTeamData( attacker ).getTeam()) {
 					event.setCancelled(true);
 					return;

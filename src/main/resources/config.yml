@@ -60,6 +60,7 @@ settings:
     # How often the main timer (for bossbar and other) should update IN SECONDS
     timer-interval: 1
     join-location: "world;500.5;82;517.5;-180;0"
+    explosion-multiplier: 0.5
 team:
     # When enabled, players will see nametags of other players on their team
     # if 'hide-nametags' is disabled, this option is ignored and names will show regardless

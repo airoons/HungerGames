@@ -7,13 +7,11 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import tk.shanebee.hg.data.TeamData;
 import tk.shanebee.hg.game.Game;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.data.PlayerData;
+import tk.shanebee.hg.listeners.ChestDrop;
 import tk.shanebee.hg.managers.PlayerManager;
-
-import java.util.UUID;
 
 public class CompassTask implements Runnable {
 
@@ -32,10 +30,9 @@ public class CompassTask implements Runnable {
 				PlayerData pd = playerManager.getPlayerData(p.getUniqueId());
 
 				if (pd != null) {
-
-					String[] st = getNearestPlayer(p, pd);
+					int dist = getNearestDrop(p, pd);
 					String info = ChatColor.translateAlternateColorCodes('&',
-							HG.getPlugin().getLang().compass_nearest_player.replace("<player>", st[0]).replace("<distance>", st[1]));
+							HG.getPlugin().getLang().compass_nearest_player.replace("<distance>", dist > -1 ? String.valueOf(getNearestDrop(p, pd)) : "?"));
 
 					for (ItemStack it : p.getInventory()) {
 						if (it != null && it.getType() == Material.COMPASS) {
@@ -57,37 +54,21 @@ public class CompassTask implements Runnable {
 		return i;
 	}
 
-	private String[] getNearestPlayer(Player p, PlayerData pd) {
-
+	private int getNearestDrop(Player p, PlayerData pd) {
 		Game g = pd.getGame();
-		TeamData td = g.getGameTeamData().getTeamData(p.getUniqueId());
 
 		int x = p.getLocation().getBlockX();
 		int y = p.getLocation().getBlockY();
 		int z = p.getLocation().getBlockZ();
 
-		int i = 200000;
+		ChestDrop chestDrop =  g.getChestDrop().getLatestDrop();
+		if (chestDrop != null) {
+			Location l = chestDrop.getOriginal();
+			p.setCompassTarget(l);
 
-		Player player = null;
-
-		for (UUID u: g.getGamePlayerData().getPlayers()) {
-
-			Player p2 = Bukkit.getPlayer(u);
-
-			if (p2 != null && !p2.equals(p) && !td.isOnTeam(u)) {
-
-				Location l = p2.getLocation();
-
-				int c = cal((int) (x - l.getX())) + cal((int) (y - l.getY())) + cal((int) (z - l.getZ()));
-
-				if (i > c) {
-					player = p2;
-					i = c;
-				}
-			}
+			return cal((int) (x - l.getX())) + cal((int) (y - l.getY())) + cal((int) (z - l.getZ()));
 		}
-		if (player != null) p.setCompassTarget(player.getLocation());
 
-		return new String[] {(player==null?"none":player.getName()), String.valueOf(i)};
+		return -1;
 	}
 }

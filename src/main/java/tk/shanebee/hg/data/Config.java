@@ -46,6 +46,7 @@ public class Config {
     public static int timerInterval;
     public static String lobbyLocationStr;
     public static Location lobbyLocation;
+    public static double explosionMultiplier;
 
     //Team info
     public static boolean team_showTeamNames;
@@ -150,6 +151,7 @@ public class Config {
         bonusBlockTypes = config.getStringList("settings.bonus-block-types");
         timerInterval = config.getInt("settings.timer-interval");
         lobbyLocationStr = config.getString("settings.join-location");
+        explosionMultiplier = config.getDouble("settings.explosion-multiplier");
 
         // Team
         team_maxTeamSize = config.getInt("team.max-team-size");
