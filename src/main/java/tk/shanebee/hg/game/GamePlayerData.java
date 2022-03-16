@@ -53,6 +53,8 @@ public class GamePlayerData extends Data {
     final Map<UUID, Integer> kills = new HashMap<>();
     final Map<UUID, Integer> chestsLooted = new HashMap<>();
 
+    public UUID lastFight = null;
+
     protected GamePlayerData(Game game) {
         super(game);
         this.playerManager = plugin.getPlayerManager();
@@ -156,6 +158,7 @@ public class GamePlayerData extends Data {
     public void freeze(Player player) {
         player.setGameMode(GameMode.SURVIVAL);
         player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 23423525, -10, false, false));
+        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 23423525, 9, false, false));
         player.setWalkSpeed(0.0001F);
         player.setFoodLevel(1);
         player.setAllowFlight(false);
@@ -170,6 +173,7 @@ public class GamePlayerData extends Data {
      */
     public void unFreeze(Player player) {
         player.removePotionEffect(PotionEffectType.JUMP);
+        player.removePotionEffect(PotionEffectType.SLOW_DIGGING);
         player.setWalkSpeed(0.2F);
     }
 
@@ -423,8 +427,12 @@ public class GamePlayerData extends Data {
                     PlayerData data = playerManager.getPlayerData(p);
 
                     if (data == null || data.getGame() == null) {
-                        p.hidePlayer(plugin, player);
-                        player.hidePlayer(plugin, p);
+                        if (playerManager.hasSpectatorData(p) && playerManager.getGame(p) == game) {
+                            p.showPlayer(plugin, player);
+                        } else {
+                            p.hidePlayer(plugin, player);
+                            player.hidePlayer(plugin, p);
+                        }
                     } else if (data.getGame() == game) {
                         p.showPlayer(plugin, player);
                         player.showPlayer(plugin, p);
@@ -455,16 +463,15 @@ public class GamePlayerData extends Data {
      * Make a player leave the game
      *
      * @param player Player to leave the game
-     * @param death  Whether the player has died or not (Genefrally should be false)
+     * @param death  Whether the player has died or not (Generally should be false)
      */
     public void leave(Player player, Boolean death) {
         Bukkit.getPluginManager().callEvent(new PlayerLeaveGameEvent(game, player, death));
         UUID uuid = player.getUniqueId();
         players.remove(uuid);
         game.gameArenaData.aliveCount = lang.players_alive_num.replace("<num>", String.valueOf(players.size()));
-        if (!death) {
-            game.gameArenaData.boards.removeBoard(player);
-        }
+        game.gameArenaData.boards.removeBoard(player);
+
         unFreeze(player);
         if (death) {
             if (Config.spectateEnabled && Config.spectateOnDeath) {
@@ -626,5 +633,6 @@ public class GamePlayerData extends Data {
     public void clearData() {
         kills.clear();
         chestsLooted.clear();
+        lastFight = null;
     }
 }

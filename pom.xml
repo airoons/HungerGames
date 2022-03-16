@@ -16,16 +16,16 @@
 
     <repositories>
         <repository>
+            <id>CodeMC</id>
+            <url>https://repo.codemc.org/repository/maven-public</url>
+        </repository>
+        <repository>
             <id>papermc</id>
             <url>https://papermc.io/repo/repository/maven-public/</url>
         </repository>
         <repository>
             <id>placeholderapi</id>
             <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
-        </repository>
-        <repository>
-            <id>CodeMC</id>
-            <url>https://repo.codemc.org/repository/maven-public</url>
         </repository>
         <repository>
             <id>vault-repo</id>
@@ -39,10 +39,6 @@
             <id>nexus</id>
             <name>Lumine Releases</name>
             <url>https://mvn.lumine.io/repository/maven-public/</url>
-        </repository>
-        <repository>
-            <id>IntellectualSites</id>
-            <url>https://mvn.intellectualsites.com/content/repositories/releases/</url>
         </repository>
         <repository>
             <id>dmulloy2-repo</id>
@@ -86,7 +82,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.github.tr7zw.Item-NBT-API</groupId>
+            <groupId>de.tr7zw</groupId>
             <artifactId>item-nbt-api</artifactId>
             <!--suppress MavenModelInspection -->
             <version>2.6.0</version>
@@ -132,12 +128,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.intellectualsites.fawe</groupId>
-            <artifactId>FAWE-Bukkit</artifactId>
-            <version>1.16-687</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>fr.mrmicky</groupId>
             <artifactId>fastboard</artifactId>
             <version>1.2.1</version>
@@ -154,6 +144,13 @@
             <artifactId>worldguard-bukkit</artifactId>
             <version>7.0.4</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>lv.side</groupId>
+            <artifactId>LESLMinecraftArena</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/depend/LESLMinecraftArena.jar</systemPath>
         </dependency>
     </dependencies>
 
@@ -202,7 +199,7 @@
                     <artifactSet>
                         <includes>
                             <include>fr.mrmicky</include>
-                            <include>com.github.tr7zw.Item-NBT-API</include>
+                            <include>de.tr7zw</include>
                             <include>io.papermc</include>
                         </includes>
                     </artifactSet>

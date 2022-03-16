@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.data.Config;
+import tk.shanebee.hg.data.PlayerData;
 import tk.shanebee.hg.data.TeamData;
 import tk.shanebee.hg.managers.PlayerManager;
 import tk.shanebee.hg.util.Util;
@@ -80,8 +81,10 @@ public class Team {
             if (p != null) {
                 teamOnline.add(p);
                 IEGlowPlayer ePlayer = eGlowAPI.getEGlowPlayer(p);
-                eGlowAPI.addCustomGlowReceiver(ePlayer, player);
-                eGlowAPI.enableGlow(ePlayer, glowColor);
+                if (ePlayer != null) {
+                    eGlowAPI.addCustomGlowReceiver(ePlayer, player);
+                    eGlowAPI.enableGlow(ePlayer, glowColor);
+                }
             }
         }
 
@@ -185,13 +188,15 @@ public class Team {
         return HG.getPlugin().getLang().team_colors.get(glowColor);
     }
 
-    public boolean isAlive() {
+    public boolean isAlive(Game game) {
         PlayerManager pm = HG.getPlugin().getPlayerManager();
 
         for (UUID uuid : this.players) {
             Player player = Bukkit.getPlayer(uuid);
-            if (player != null && pm.hasPlayerData(player)) {
-                return true;
+            if (player != null) {
+                PlayerData data = pm.getPlayerData(player);
+                if (data != null && data.getGame() == game)
+                    return true;
             }
         }
 

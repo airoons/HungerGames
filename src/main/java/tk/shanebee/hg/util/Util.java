@@ -302,7 +302,10 @@ public class Util {
         Attachable at = (Attachable) bs;
         BlockFace face = at.getAttachedFace();
 
-        return attached.getRelative(face).equals(base);
+        if (face == null)
+            return false;
+
+        return Objects.equals(attached.getRelative(face), base);
     }
 
     /**

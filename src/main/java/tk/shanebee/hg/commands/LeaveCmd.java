@@ -21,7 +21,7 @@ public class LeaveCmd extends BaseCmd {
 	@Override
 	public boolean run() {
 		Game game;
-		if (!Config.practiceMode)
+		if (!Config.practiceMode && !player.hasPermission("hg.admin"))
 			return true;
 
 		if (playerManager.hasPlayerData(player)) {

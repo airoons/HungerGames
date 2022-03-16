@@ -1,5 +1,8 @@
 package tk.shanebee.hg.game;
 
+import lv.side.objects.EventMatch;
+import lv.side.objects.SimpleTeam;
+import lv.side.utils.ConvertUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -16,9 +19,7 @@ import tk.shanebee.hg.data.PlayerData;
 import tk.shanebee.hg.events.GameEndEvent;
 import tk.shanebee.hg.events.GameStartEvent;
 import tk.shanebee.hg.game.GameCommandData.CommandType;
-import tk.shanebee.hg.managers.KitManager;
-import tk.shanebee.hg.managers.MobManager;
-import tk.shanebee.hg.managers.PlayerManager;
+import tk.shanebee.hg.managers.*;
 import tk.shanebee.hg.tasks.ChestDropTask;
 import tk.shanebee.hg.tasks.FreeRoamTask;
 import tk.shanebee.hg.tasks.Rollback;
@@ -29,6 +30,7 @@ import tk.shanebee.hg.util.Util;
 import tk.shanebee.hg.util.Vault;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * General game object
@@ -300,18 +302,39 @@ public class Game {
             }
         }
 
+        List<Team> remainTeams = new ArrayList<>();
         for (Team team : gameTeamData.getTeams()) {
             if (team == null) continue;
             for (UUID uuid : team.getPlayers()) {
                 Player player = Bukkit.getPlayer(uuid);
                 if (player != null) {
-                    player.getInventory().clear();
-                    Util.log("Team #" + team.getId() + ": " + player.getName());
+                    Game pGame = playerManager.getGame(player);
+                    if (pGame == this) {
+                        player.getInventory().clear();
+                        Util.log("Team #" + team.getId() + ": " + player.getName());
+                        if (!remainTeams.contains(team))
+                            remainTeams.add(team);
+                    }
                 }
             }
         }
 
         timer = new TimerTask(this, gameArenaData.countDownTime);
+        gamePointData.setPlacement(remainTeams.size());
+        PointManager.get().init(this, remainTeams);
+
+        if (!Config.practiceMode && AssignManager.get().isAssigned(this)) {
+            EventMatch match = AssignManager.get().assignedMatches.get(this);
+
+            AssignManager.get().callMatchStartEvent(match.getCount(), 1);
+
+            PointManager.get().getHistory(this).add("----------------");
+            PointManager.get().getHistory(this).add("Komandas:");
+            for (Map.Entry<Team, SimpleTeam> entry : AssignManager.get().assignedTeams.get(this).entrySet()) {
+                PointManager.get().getHistory(this).add(entry.getKey().getName() + " - " + entry.getValue().getName());
+            }
+            PointManager.get().getHistory(this).add("----------------");
+        }
     }
 
     public void cancelTasks() {
@@ -340,7 +363,7 @@ public class Game {
         gameEnded = true;
 
         for (Team aTeam : gameTeamData.getTeams()) {
-            if (aTeam.isAlive()) {
+            if (aTeam.isAlive(this)) {
                 gamePointData.setPlacement(1);
                 gamePointData.addGamePoints(aTeam, PointType.PLACEMENT);
                 break;
@@ -360,7 +383,7 @@ public class Game {
             }
         }
 
-        gamePointData.printDebugLog();
+//        gamePointData.printDebugLog();
 
         StringBuilder builder = new StringBuilder("&7 \n");
         for (String place : gamePointData.getAll()) {
@@ -368,6 +391,7 @@ public class Game {
         }
         builder.append("\n");
         gamePlayerData.msgAll(builder.toString(), false);
+        plugin.getLogger().info(builder.toString());
 
         String winner = Util.translateStop(Util.convertUUIDListToStringList(win));
 
@@ -384,6 +408,61 @@ public class Game {
         gamePlayerData.soundAll(Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f);
 
         cancelTasks();
+
+        // POINTS AND HISTORY
+
+        PointManager.get().clearStartTime(this);
+        Map<Team, Integer> points = PointManager.get().getAndClearPoints(this);
+        List<String> history = PointManager.get().getAndClearHistory(this);
+
+        if (!Config.practiceMode) {
+            if (!AssignManager.get().resetRequests.contains(this)) {
+                EventMatch match = AssignManager.get().assignedMatches.get(this);
+                if (match != null) {
+                    match.setLog(history);
+                    for (Map.Entry<Team, Integer> entry : points.entrySet()) {
+                        SimpleTeam simpleTeam = AssignManager.get().assignedTeams.get(this).get(entry.getKey());
+                        if (simpleTeam != null) {
+                            match.getTeams().put(simpleTeam, entry.getValue());
+                        }
+                    }
+
+                    AssignManager.get().callMatchFinishedEvent(match);
+
+                    AssignManager.get().assignedMatches.remove(this);
+                    AssignManager.get().assignedTeams.remove(this);
+                    for (SimpleTeam team : match.getTeams().keySet()) {
+                        for (String member : team.getMembers()) {
+                            AssignManager.get().assignedPlayers.remove(member);
+                        }
+                    }
+                }
+            } else {
+                AssignManager.get().resetRequests.remove(this);
+            }
+        }
+
+        Logger log = plugin.getLogger();
+        log.info("============================");
+        log.info("Game recap");
+        // todo: possibly include info about match??
+        log.info("============================");
+
+        for (String s : history) {
+            log.info(s);
+        }
+
+        log.info("============================");
+        log.info("Points");
+        log.info("============================");
+
+        List<String> totPoints = new ArrayList<>();
+        for (Map.Entry<Team, Integer> entry : points.entrySet()) {
+            log.info(entry.getKey().getName() + ": " + entry.getValue());
+        }
+
+        log.info("============================");
+
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             for (UUID uuid : gamePlayerData.players) {

@@ -4,6 +4,8 @@ import net.md_5.bungee.api.ChatColor;
 import org.bukkit.entity.Player;
 import tk.shanebee.hg.PointType;
 import tk.shanebee.hg.data.Config;
+import tk.shanebee.hg.managers.AssignManager;
+import tk.shanebee.hg.managers.PointManager;
 
 import java.util.*;
 import java.util.List;
@@ -16,7 +18,7 @@ public class GamePointData extends Data {
     public Map<Team, Integer> points = new HashMap<>();
     public Map<Team, List<Team>> kills = new HashMap<>();
     public Map<Team, List<String>> debugLog = new HashMap<>();
-    public int placement;
+    public int placement = 0;
     public int addedPlace;
 
     protected GamePointData(Game game) {
@@ -30,25 +32,49 @@ public class GamePointData extends Data {
 
     public void addGamePoints(Team team, PointType type) {
         int toAdd = 0;
+        PointManager pm = PointManager.get();
+        String timeNow = pm.formatSeconds((int) (System.currentTimeMillis() - pm.getStartTime(game)));
+
         if (type == PointType.KILL) {
             toAdd = Config.pointsPerKill;
 
             debugLog.get(team).add("killed a player: " + toAdd);
+            pm.getHistory(game).add(
+                    "[" + timeNow + " KILL punkti] " + team.getName() + " +" + toAdd
+            );
+            pm.getPoints(game).put(team, pm.getPoints(game).get(team) + toAdd);
+
         } else if (type == PointType.TEAM_KILL) {
             toAdd = Config.pointsPerKill + Config.pointsPerTeamBonus;
 
             debugLog.get(team).add("killed a player (+ full team kill bonus): " + toAdd);
+            pm.getHistory(game).add(
+                    "[" + timeNow + " TEAM_KILL punkti] " + team.getName() + " +" + toAdd
+            );
+            pm.getPoints(game).put(team, pm.getPoints(game).get(team) + toAdd);
         } else if (type == PointType.PLACEMENT) {
             toAdd = Config.pointsPerPlacement.get(placement) - addedPlace;
             addedPlace += toAdd;
 
+            int teamsAlive = 0;
             for (Team iTeam : points.keySet()) {
-                if (iTeam != team && !iTeam.isAlive())
+                if (iTeam != team && !iTeam.isAlive(game))
                     continue;
 
+                if (iTeam != team && iTeam.isAlive(game))
+                    teamsAlive++;
                 addPoints(iTeam, toAdd);
                 debugLog.get(iTeam).add("placement: " + toAdd);
+
+                if (iTeam == team) {
+                    pm.getHistory(game).add(
+                            "[" + timeNow + " PLACEMENT punkti] " + team.getName() + " +" + Config.pointsPerPlacement.get(placement)
+                    );
+                    pm.getPoints(game).put(team, pm.getPoints(game).get(team) + Config.pointsPerPlacement.get(placement));
+                }
             }
+
+            placement = teamsAlive;
             return;
         }
 
@@ -87,7 +113,9 @@ public class GamePointData extends Data {
         int i = 1;
 
         for (Map.Entry<Team, Integer> entry : points.entrySet()) {
-            result.add(getTeamPointsFormatted(entry.getKey(), i, entry.getValue(), false));
+            if (entry.getValue() == 0 && !Config.practiceMode && (PointManager.get().getPoints(game) == null || !PointManager.get().getPoints(game).containsKey(entry.getKey())))
+                continue;
+            result.add(getAdvTeamPointsFormatted(entry.getKey(), i, entry.getValue(), !Config.practiceMode));
             i++;
         }
 
@@ -97,12 +125,12 @@ public class GamePointData extends Data {
     public ArrayList<String> getAll(Player player) {
         ArrayList<String> result = new ArrayList<>();
 
-        Team playerTeam = game.gameTeamData.getTeamData(player.getUniqueId()).getTeam();
-
         int i = 1;
 
         for (Map.Entry<Team, Integer> entry : points.entrySet()) {
-            result.add(getTeamPointsFormatted(entry.getKey(), i, entry.getValue(), entry.getKey() == playerTeam));
+            if (entry.getValue() == 0 && !Config.practiceMode && (PointManager.get().getPoints(game) == null || !PointManager.get().getPoints(game).containsKey(entry.getKey())))
+                continue;
+            result.add(getAdvTeamPointsFormatted(entry.getKey(), i, entry.getValue(), !Config.practiceMode));
             i++;
         }
 
@@ -143,6 +171,17 @@ public class GamePointData extends Data {
         }
 
         return -1;
+    }
+
+    private String getAdvTeamPointsFormatted(Team team, int place, int points, boolean added) {
+        if (team == null)
+            return "";
+
+        return ChatColor.translateAlternateColorCodes('&', plugin.getLang().scoreboard_line_top_places
+                .replace("<place>", String.valueOf(place))
+                .replace("<teamname>", team.getChatColor() + lang.team_colors.get(team.getGlowColor()))
+                .replace("<points>", String.valueOf(points)) + (added ? " &7&o" + AssignManager.get().assignedTeams.get(game).get(team).getName() : "")
+        );
     }
 
     private String getTeamPointsFormatted(Team team, int place, int points, boolean isPlayerTeam) {

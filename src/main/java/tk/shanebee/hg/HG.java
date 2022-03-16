@@ -12,6 +12,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import tk.shanebee.hg.commands.CommandHandler;
+import tk.shanebee.hg.commands.other.SpectatePlayerCommand;
 import tk.shanebee.hg.data.ArenaConfig;
 import tk.shanebee.hg.data.Config;
 import tk.shanebee.hg.data.Language;
@@ -141,6 +142,7 @@ public class HG extends JavaPlugin {
 
 		// Load commands
         new CommandHandler(this);
+		this.getCommand("spectpl").setExecutor(new SpectatePlayerCommand());
 
 		// Register event listeners
 		pluginManager.registerEvents(new WandListener(this), this);
@@ -152,6 +154,10 @@ public class HG extends JavaPlugin {
 		if (this.getDescription().getVersion().contains("Beta")) {
 			Util.log("&eYOU ARE RUNNING A BETA VERSION, please use with caution");
 			Util.log("&eReport any issues to: &bhttps://github.com/ShaneBeeStudios/HungerGames/issues");
+		}
+
+		if (!Config.practiceMode) {
+			pluginManager.registerEvents(new MatchListeners(), this);
 		}
 
 		// Paper message

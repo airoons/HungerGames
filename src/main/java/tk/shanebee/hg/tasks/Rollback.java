@@ -10,6 +10,7 @@ import tk.shanebee.hg.data.ItemFrameData;
 import tk.shanebee.hg.game.Game;
 import tk.shanebee.hg.Status;
 import tk.shanebee.hg.game.GameBlockData;
+import tk.shanebee.hg.managers.AssignManager;
 
 /**
  * Rollback task for resetting blocks after a game finishes
@@ -60,6 +61,7 @@ public class Rollback implements Runnable {
         gameBlockData.resetBlocks();
         gameBlockData.resetItemFrames();
         game.getGameArenaData().setStatus(Status.READY);
+		if (!Config.practiceMode)
+			AssignManager.get().updateAvailableArenas();
 	}
-
 }

@@ -1,10 +1,8 @@
 package tk.shanebee.hg.commands;
 
-import tk.shanebee.hg.data.Language;
+import org.bukkit.scheduler.BukkitRunnable;
 import tk.shanebee.hg.game.Game;
-import tk.shanebee.hg.HG;
 import tk.shanebee.hg.Status;
-import tk.shanebee.hg.game.GamePlayerData;
 import tk.shanebee.hg.util.Util;
 
 public class SpectateCmd extends BaseCmd {
@@ -19,18 +17,28 @@ public class SpectateCmd extends BaseCmd {
 
 	@Override
 	public boolean run() {
-		if (playerManager.hasPlayerData(player) || playerManager.hasSpectatorData(player)) {
+		if (playerManager.hasPlayerData(player)) {
 			Util.scm(player, lang.cmd_join_in_game);
 		} else {
 			Game game = gameManager.getGame(args[1]);
-			GamePlayerData gamePlayerData = game.getGamePlayerData();
-			if (game != null && !gamePlayerData.getPlayers().contains(player.getUniqueId()) && !gamePlayerData.getSpectators().contains(player.getUniqueId())) {
-				Status status = game.getGameArenaData().getStatus();
-				if (status == Status.RUNNING || status == Status.BEGINNING) {
-					gamePlayerData.spectate(player, true);
-				} else {
-					Util.scm(player, plugin.getLang().arena_cannot_spectate);
+			if (game != null && !game.getGamePlayerData().getPlayers().contains(player.getUniqueId())) {
+				int delay = 0;
+				if (playerManager.hasSpectatorData(player)) {
+					delay = 10;
+					playerManager.getGame(player).getGamePlayerData().leaveSpectate(player);
 				}
+
+				new BukkitRunnable() {
+					@Override
+					public void run() {
+						Status status = game.getGameArenaData().getStatus();
+						if (status != Status.BROKEN && status != Status.NOTREADY && status != Status.ROLLBACK && status != Status.STOPPED) {
+							game.getGamePlayerData().spectate(player, true);
+						} else {
+							Util.scm(player, plugin.getLang().arena_cannot_spectate);
+						}
+					}
+				}.runTaskLater(plugin, delay);
 			} else {
 				Util.scm(player, lang.cmd_delete_noexist);
 			}

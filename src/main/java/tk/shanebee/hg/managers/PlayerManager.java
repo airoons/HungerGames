@@ -204,6 +204,7 @@ public class PlayerManager {
      * @param player Player to get game
      * @return Game of player, null if player is not in a game
      */
+    @Nullable
     public Game getGame(Player player) {
         return getGame(player.getUniqueId());
     }

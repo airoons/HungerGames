@@ -69,7 +69,7 @@ public class SpectatorGUI implements InventoryProvider {
         SkullMeta meta = ((SkullMeta) head.getItemMeta());
         assert meta != null;
         meta.setOwningPlayer(player);
-        meta.setDisplayName(Placeholders.getTeamPrefixFormatted((Player) player) + Placeholders.getTeamColor((Player) player) + player.getName());
+        meta.setDisplayName(Util.getColString(Placeholders.getTeamPrefixFormatted((Player) player) + Placeholders.getTeamColor((Player) player) + player.getName()));
         String[] lore = Util.getColString(HG.getPlugin().getLang().spectator_compass_head_lore).split(";");
         meta.setLore(Arrays.asList(lore));
         head.setItemMeta(meta);

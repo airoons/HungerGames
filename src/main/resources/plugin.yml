@@ -6,8 +6,10 @@ version: '${project.version}'
 website: https://bitbucket.org/ShaneBeeStudios/hungergames
 api-version: '1.13'
 depend: [FastAsyncWorldEdit, eGlow, WorldGuard]
-softdepend: [Multiverse-Core, MultiWorld, Vault, My_Worlds, GoldenEnchants, mcMMO, MythicMobs, PlaceholderAPI, XConomy]
+softdepend: [LESLMinecraftArena, Multiverse-Core, MultiWorld, Vault, My_Worlds, GoldenEnchants, mcMMO, MythicMobs, PlaceholderAPI, XConomy]
 
 commands:
   hg:
     description: HungerGames Base command
+  spectpl:
+    description: Spect arena of a player

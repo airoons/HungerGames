@@ -1,13 +1,16 @@
 package tk.shanebee.hg.managers;
 
+import lv.side.objects.SimpleTeam;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import tk.shanebee.hg.HG;
+import tk.shanebee.hg.data.Config;
 import tk.shanebee.hg.data.Language;
 import tk.shanebee.hg.data.Leaderboard;
 import tk.shanebee.hg.data.TeamData;
 import tk.shanebee.hg.game.Game;
+import tk.shanebee.hg.game.Team;
 
 /**
  * Internal placeholder class
@@ -93,6 +96,30 @@ public class Placeholders extends PlaceholderExpansion {
         if (identifier.equalsIgnoreCase("lb_player")) {
             return String.valueOf(leaderboard.getStat(player.getUniqueId(), Leaderboard.Stats.WINS));
         }
+
+        if (identifier.equalsIgnoreCase("tab_team")) {
+            if (!Config.practiceMode) {
+                Game g = AssignManager.get().assignedPlayers.get(player.getName());
+                if (g == null)
+                    return "";
+
+                if (!AssignManager.get().assignedTeams.containsKey(g))
+                    return "";
+
+                Team team = AssignManager.get().playerTeams.get(player.getName());
+                if (team == null)
+                    return "";
+
+                SimpleTeam simpleTeam = AssignManager.get().assignedTeams.get(g).get(team);
+                if (simpleTeam == null)
+                    return "";
+
+                return " &7&o" + simpleTeam.getName();
+            } else {
+                return "";
+            }
+        }
+
         String[] id = identifier.split("_");
         switch (id[0]) {
             case "lb":

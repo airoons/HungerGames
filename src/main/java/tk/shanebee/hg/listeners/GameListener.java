@@ -29,11 +29,14 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.PointType;
@@ -44,10 +47,7 @@ import tk.shanebee.hg.events.PlayerDeathGameEvent;
 import tk.shanebee.hg.game.*;
 import tk.shanebee.hg.game.GameCommandData.CommandType;
 import tk.shanebee.hg.gui.SpectatorGUI;
-import tk.shanebee.hg.managers.KillManager;
-import tk.shanebee.hg.managers.Manager;
-import tk.shanebee.hg.managers.Placeholders;
-import tk.shanebee.hg.managers.PlayerManager;
+import tk.shanebee.hg.managers.*;
 import tk.shanebee.hg.util.BlockUtils;
 import tk.shanebee.hg.util.Util;
 
@@ -215,6 +215,8 @@ public class GameListener implements Listener {
 					return;
 				}
 
+				game.getGamePlayerData().lastFight = attacker;
+
 				if (event.getFinalDamage() >= player.getHealth()) {
 					event.setCancelled(true);
 					processDeath(player, game, ((EntityDamageByEntityEvent) event).getDamager(), event.getCause());
@@ -257,24 +259,19 @@ public class GameListener implements Listener {
 			boolean alive = false;
 			if (team != null) {
 				for (UUID uuid : team.getPlayers()) {
-					if (uuid != player.getUniqueId() && playerManager.hasPlayerData(uuid)) {
+					if (uuid != player.getUniqueId() && playerManager.hasPlayerData(uuid) && playerManager.getGame(uuid) == game) {
 						alive = true;
 						break;
 					}
 				}
 
 				if (!alive) {
-					int teamsAlive = 0;
-					for (Team aTeam : game.getGameTeamData().getTeams()) {
-						if (aTeam.isAlive()) {
-							teamsAlive++;
-						}
-					}
-
-					game.getGamePointData().setPlacement(teamsAlive);
 					game.getGamePointData().addGamePoints(team, PointType.PLACEMENT);
 				}
 			}
+
+			PointManager pm = PointManager.get();
+			String timeNow = pm.formatSeconds((int) (System.currentTimeMillis() - pm.getStartTime(game)));
 
 			if (damager instanceof Player) {
 				gamePlayerData.addKill(((Player) damager));
@@ -284,6 +281,10 @@ public class GameListener implements Listener {
 				if (damTeam != null) {
 					game.getGamePointData().addGamePoints(damTeam, alive ? PointType.KILL : PointType.TEAM_KILL);
 				}
+				pm.getHistory(game).add(
+						"[" + timeNow + " KILL] Spēlētājs " + damager.getName() + (damTeam != null ? " (" + damTeam.getName() + ")" : "") +
+								" nogalināja " + player.getName() + (team != null ? " (" + team.getName() + ")" : "")
+				);
 
 				deathString = killManager.getKillString(player, damager, game);
 			} else if (cause == DamageCause.ENTITY_ATTACK) {
@@ -298,6 +299,13 @@ public class GameListener implements Listener {
 					if (damTeam != null) {
 						game.getGamePointData().addGamePoints(damTeam, alive ? PointType.KILL : PointType.TEAM_KILL);
 					}
+
+					pm.getHistory(game).add(
+							"[" + timeNow + " KILL] Spēlētājs " + killManager.getShooter(damager).getName() +
+									" (" + (damTeam != null ? " (" + damTeam.getName() + ")" : "") +
+									") nogalināja " + player.getName() + (team != null ? " (" + team.getName() + ")" : "")
+					);
+
                 }
 			} else {
 				deathString = killManager.getDeathString(cause, player.getName());
@@ -521,6 +529,13 @@ public class GameListener implements Listener {
 				useTrackStick(player);
 			}
 		}
+	}
+
+	@EventHandler
+	public void onInventoryClick(InventoryClickEvent event) {
+		Game g = playerManager.getGame(event.getWhoClicked().getUniqueId());
+		if (g != null && (g.getGameArenaData().getStatus() == Status.WAITING || g.getGameArenaData().getStatus() == Status.COUNTDOWN) || playerManager.hasSpectatorData(event.getWhoClicked().getUniqueId()))
+			event.setCancelled(true);
 	}
 
 	@EventHandler
@@ -825,6 +840,10 @@ public class GameListener implements Listener {
 		player.setLevel(0);
 		player.setExp(0f);
 		player.setFoodLevel(20);
+		for (PotionEffect potionEffect : player.getActivePotionEffects()) {
+			player.removePotionEffect(potionEffect.getType());
+		}
+
 		PaperLib.teleportAsync(player, spawn).thenAccept(a -> {
 			EGlowAPI eGlowAPI = EGlow.getAPI();
 			IEGlowPlayer ePlayer = eGlowAPI.getEGlowPlayer(player);
@@ -838,6 +857,16 @@ public class GameListener implements Listener {
 					p.hidePlayer(plugin, player);
 					player.hidePlayer(plugin, p);
 				}
+			}
+
+			if (!Config.practiceMode) {
+				new BukkitRunnable() {
+					@Override
+					public void run() {
+						if (player.isOnline())
+							AssignManager.get().playerJoin(event.getPlayer());
+					}
+				}.runTaskLater(plugin, 20L);
 			}
 		});
 
@@ -855,6 +884,22 @@ public class GameListener implements Listener {
 		    PlayerData playerData = playerManager.getPlayerData(player);
 			game = playerData.getGame();
 		    playerData.setOnline(false);
+
+			Team team = game.getGameTeamData().getTeamData(player.getUniqueId()).getTeam();
+			boolean alive = false;
+			if (team != null && (game.getGameArenaData().getStatus() == Status.BEGINNING || game.getGameArenaData().getStatus() == Status.RUNNING)) {
+				for (UUID uuid : team.getPlayers()) {
+					if (uuid != player.getUniqueId() && playerManager.hasPlayerData(uuid)) {
+						alive = true;
+						break;
+					}
+				}
+
+				if (!alive) {
+					game.getGamePointData().addGamePoints(team, PointType.PLACEMENT);
+				}
+			}
+
 			playerData.getGame().getGamePlayerData().leave(player, false);
 			if (game != null && (game.getGameArenaData().getStatus() == Status.RUNNING || game.getGameArenaData().getStatus() == Status.BEGINNING))
 				playerData.getGame().getGamePlayerData().msgAll(plugin.getKillManager().getKillString(player, null, game));
@@ -881,27 +926,20 @@ public class GameListener implements Listener {
 			}
 		}
 
-		if (td != null && (game == null || (game.getGameArenaData().getStatus() == Status.READY || game.getGameArenaData().getStatus() == Status.WAITING || game.getGameArenaData().getStatus() == Status.COUNTDOWN))){
+		if (td != null && td.getTeam() != null && (game == null || (game.getGameArenaData().getStatus() == Status.READY || game.getGameArenaData().getStatus() == Status.WAITING || game.getGameArenaData().getStatus() == Status.COUNTDOWN))){
 			if (game != null) {
+				// todo: isn't this unnecessary (see above)?
 				boolean alive = false;
 
 				for (UUID uuid : td.getTeam().getPlayers()) {
 					Player tPlayer = Bukkit.getPlayer(uuid);
-					if (tPlayer != null && tPlayer != player && playerManager.hasPlayerData(tPlayer)) {
+					if (tPlayer != null && tPlayer != player && playerManager.hasPlayerData(tPlayer) && playerManager.getGame(uuid) == game) {
 						alive = true;
 						break;
 					}
 				}
 
 				if (!alive) {
-					int teamsAlive = 0;
-					for (Team aTeam : game.getGameTeamData().getTeams()) {
-						if (aTeam.isAlive()) {
-							teamsAlive++;
-						}
-					}
-
-					game.getGamePointData().setPlacement(teamsAlive + 1);
 					game.getGamePointData().addGamePoints(td.getTeam(), PointType.PLACEMENT);
 				}
 
@@ -987,7 +1025,7 @@ public class GameListener implements Listener {
 			}
 		}
 
-		if (game != null && !isPublic && !tipReceived.contains(player.getUniqueId())) {
+		if (game != null && !isPublic && !tipReceived.contains(player.getUniqueId()) && !playerManager.hasSpectatorData(player)) {
 			Util.scm(player, lang.chat_tip);
 			player.playSound(player.getLocation(), Sound.ENTITY_CHICKEN_EGG, 1, 1);
 			tipReceived.add(player.getUniqueId());
