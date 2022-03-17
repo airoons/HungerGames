@@ -51,8 +51,8 @@ public class PointManager {
         arenaStartTimes.remove(g);
     }
 
-    public String formatSeconds(int seconds) {
-        Date d = new Date(seconds * 1000L);
+    public String formatSeconds(long ms) {
+        Date d = new Date(ms);
         SimpleDateFormat df = new SimpleDateFormat("mm:ss");
 
         return df.format(d);

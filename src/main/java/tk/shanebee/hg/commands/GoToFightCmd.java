@@ -28,7 +28,7 @@ public class GoToFightCmd extends BaseCmd {
             return true;
 
         Game targetGame = playerManager.getGame(target);
-        if (targetGame == null || targetGame != g)
+        if (targetGame == null || targetGame != g || g.getGamePlayerData().getSpectators().contains(target.getUniqueId()))
             return true;
 
         if (target.getLocation().distanceSquared(player.getLocation()) >= 900)

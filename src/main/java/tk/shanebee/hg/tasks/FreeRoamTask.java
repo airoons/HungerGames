@@ -4,11 +4,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 import tk.shanebee.hg.HG;
 import tk.shanebee.hg.data.Language;
 import tk.shanebee.hg.game.Game;
 import tk.shanebee.hg.util.Util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class FreeRoamTask implements Runnable {
@@ -40,6 +43,49 @@ public class FreeRoamTask implements Runnable {
                 player.playSound(player.getLocation(), Sound.BLOCK_END_PORTAL_SPAWN, 1f, 1f);
             }
         }
+
+        List<Player> gPlayers = new ArrayList<>();
+        for (UUID u : game.getGamePlayerData().getPlayers()) {
+            Player player = Bukkit.getPlayer(u);
+            if (player != null) {
+                gPlayers.add(player);
+            }
+        }
+
+        List<Player> gSpectators = new ArrayList<>();
+        for (UUID u : game.getGamePlayerData().getSpectators()) {
+            Player player = Bukkit.getPlayer(u);
+            if (player != null) {
+                gSpectators.add(player);
+            }
+        }
+
+        HG plugin = HG.getPlugin();
+
+        for (Player player : gPlayers) {
+            for (Player gPlayer : gPlayers) {
+                player.hidePlayer(plugin, gPlayer);
+                gPlayer.hidePlayer(plugin, player);
+            }
+            for (Player gSpectator : gSpectators) {
+                gSpectator.hidePlayer(plugin, player);
+            }
+        }
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                for (Player player : gPlayers) {
+                    for (Player gPlayer : gPlayers) {
+                        player.showPlayer(plugin, gPlayer);
+                        gPlayer.showPlayer(plugin, player);
+                    }
+                    for (Player gSpectator : gSpectators) {
+                        gSpectator.showPlayer(plugin, player);
+                    }
+                }
+            }
+        }.runTaskLater(plugin, 5L);
         this.id = Bukkit.getScheduler().scheduleSyncDelayedTask(HG.getPlugin(), this, roamTime * 20L);
     }
 

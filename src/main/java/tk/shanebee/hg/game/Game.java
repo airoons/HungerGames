@@ -319,7 +319,7 @@ public class Game {
             }
         }
 
-        timer = new TimerTask(this, gameArenaData.countDownTime);
+        timer = new TimerTask(this, gameArenaData.roamTime);
         gamePointData.setPlacement(remainTeams.size());
         PointManager.get().init(this, remainTeams);
 
@@ -561,8 +561,7 @@ public class Game {
                     otPlayer.showPlayer(plugin, oPlayer);
                 }
 
-            if (Config.practiceMode)
-                gameTeamData.resetTeams();
+            gameTeamData.resetTeams();
 
             gameArenaData.setNextEvent(lang.scoreboard_stage_grace);
             gamePlayerData.clearData();

@@ -1,5 +1,6 @@
 package tk.shanebee.hg.game;
 
+import lv.side.objects.SimpleTeam;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.entity.Player;
 import tk.shanebee.hg.PointType;
@@ -33,7 +34,7 @@ public class GamePointData extends Data {
     public void addGamePoints(Team team, PointType type) {
         int toAdd = 0;
         PointManager pm = PointManager.get();
-        String timeNow = pm.formatSeconds((int) (System.currentTimeMillis() - pm.getStartTime(game)));
+        String timeNow = pm.formatSeconds(System.currentTimeMillis() - pm.getStartTime(game));
 
         if (type == PointType.KILL) {
             toAdd = Config.pointsPerKill;
@@ -72,6 +73,12 @@ public class GamePointData extends Data {
                     );
                     pm.getPoints(game).put(team, pm.getPoints(game).get(team) + Config.pointsPerPlacement.get(placement));
                 }
+            }
+
+            if (!Config.practiceMode && AssignManager.get().assignedTeams.containsKey(game)) {
+                SimpleTeam simpleTeam = AssignManager.get().assignedTeams.get(game).get(team);
+                if (simpleTeam != null)
+                    AssignManager.get().assignedMatches.get(game).getAliveMs().put(simpleTeam.getId(), (int) (System.currentTimeMillis() - pm.getStartTime(game)));
             }
 
             placement = teamsAlive;

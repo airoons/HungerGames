@@ -271,7 +271,7 @@ public class GameListener implements Listener {
 			}
 
 			PointManager pm = PointManager.get();
-			String timeNow = pm.formatSeconds((int) (System.currentTimeMillis() - pm.getStartTime(game)));
+			String timeNow = pm.formatSeconds(System.currentTimeMillis() - pm.getStartTime(game));
 
 			if (damager instanceof Player) {
 				gamePlayerData.addKill(((Player) damager));

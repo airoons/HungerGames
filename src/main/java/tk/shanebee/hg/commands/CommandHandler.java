@@ -68,6 +68,7 @@ public class CommandHandler {
         registerCommand(SetAuthor.class);
         registerCommand(GoToTeamCmd.class);
         registerCommand(GoToFightCmd.class);
+        registerCommand(BroadcastCmd.class);
 
         if (Config.spectateEnabled) {
             registerCommand(SpectateCmd.class);
