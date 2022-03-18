@@ -7,7 +7,7 @@ public class BroadcastCmd extends BaseCmd {
 
     public BroadcastCmd() {
         forcePlayer = true;
-        cmdName = "bc";
+        cmdName = "broadcast";
         forceInGame = true;
         argLength = 2;
         usage = "<message>";
@@ -19,7 +19,7 @@ public class BroadcastCmd extends BaseCmd {
         if (g == null)
             return true;
 
-        g.getGamePlayerData().msgAll(Util.getColString(" \n  &e" + args[1] + "\n "));
+        g.getGamePlayerData().msgAll(Util.getColString(" \n  &e" + args[1] + "\n "), false);
 
         return true;
     }

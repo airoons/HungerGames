@@ -28,7 +28,7 @@ public class TeamGUI implements InventoryProvider {
 
     private final HG plugin;
     private final InventoryManager invManager;
-    private static Map<Material, EGlowColor> colorMap;
+    public static Map<Material, EGlowColor> colorMap;
     private static Material[] bannerList;
     private SmartInventory inventory;
     private Game game;

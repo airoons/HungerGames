@@ -30,8 +30,6 @@ public class GoToTeamCmd extends BaseCmd {
             return true;
 
         Random rand = new Random();
-        int t = rand.nextInt(team.getPlayers().size());
-
         List<Player> players = new ArrayList<>();
 
         for (UUID uuid : team.getPlayers()) {
@@ -40,6 +38,9 @@ public class GoToTeamCmd extends BaseCmd {
                 players.add(target);
             }
         }
+
+        if (players.isEmpty())
+            return true;
 
         player.teleport(players.remove(rand.nextInt(players.size())).getLocation().add(0, 1, 0));
 
